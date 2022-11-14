@@ -1,7 +1,6 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart';
@@ -13,7 +12,8 @@ import 'package:muiziq_app/screens/widgets/screen_title.dart';
 bool isVisible = false;
 
 class ScreenPlaylist extends StatefulWidget {
-  const ScreenPlaylist({super.key});
+  final AudioPlayer audioPlayer;
+  const ScreenPlaylist({super.key, required this.audioPlayer});
 
   @override
   State<ScreenPlaylist> createState() => _ScreenPlaylistState();
@@ -44,6 +44,12 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
                   child: ValueListenableBuilder(
                     valueListenable: list,
                     builder: (context, List<PlaylistModel> value, child) {
+                      if (value.isEmpty) {
+                        return const Center(
+                            child: Text("No Playlist Created yet",
+                                style:
+                                    TextStyle(color: textColor, fontSize: 20)));
+                      }
                       return GridView.builder(
                           itemCount: value.length,
                           gridDelegate:
@@ -58,6 +64,7 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (ctx) => ScreenPlaylistView(
+                                            playlistData: value[index],
                                             index: index,
                                           ))),
                               child: Column(
@@ -77,34 +84,22 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
                                       bottom: 0,
                                       right: 0,
                                       child: IconButton(
-                                        onPressed: () {},
-                                        icon: Icon(
+                                        onPressed: () {
+                                          // deletePlaylist(index);
+                                          // setState(() {});
+                                          playlistFunctions(context, index);
+                                        },
+                                        icon: const Icon(
                                           Icons.more_vert,
                                           color: themeColor,
                                         ),
                                       ),
                                     ),
                                   ]),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Text(
-                                        value[index].name,
-                                        style: const TextStyle(
-                                            color: textColor, fontSize: 20),
-                                      ),
-                                      // kWidth10,
-                                      const Icon(
-                                        Icons.edit,
-                                        color: themeColor,
-                                      ),
-                                      // kWidth10,
-                                      const Icon(
-                                        Icons.delete,
-                                        color: Colors.red,
-                                      )
-                                    ],
+                                  Text(
+                                    value[index].name,
+                                    style: const TextStyle(
+                                        color: textColor, fontSize: 20),
                                   )
                                 ],
                               ),
@@ -129,6 +124,69 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
         },
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  playlistFunctions(ctx, int index) {
+    return showDialog(
+      context: ctx,
+      builder: ((context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: bgPrimary,
+          // title: const Center(
+          //   child: Text(
+          //     "",
+          //     style: TextStyle(color: textColor),
+          //   ),
+          // ),
+          actions: [
+            Center(
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: 200,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.edit),
+                          kWidth10,
+                          Text('Edit')
+                        ],
+                      ),
+                    ),
+                  ),
+                  kWidth10,
+                  SizedBox(
+                    width: 200,
+                    child: ElevatedButton(
+                      style:
+                          ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      onPressed: () {
+                        deletePlaylist(index);
+                        setState(() {
+                          Navigator.of(context).pop();
+                        });
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.delete),
+                          kWidth10,
+                          Text('Delete'),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            )
+          ],
+        );
+      }),
     );
   }
 
@@ -174,19 +232,20 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
               ),
             ),
             content: SizedBox(
-              height: 80,
+              height: 90,
               child: Column(
                 children: [
                   Visibility(
                     visible: isVisible,
-                    child: Text(
+                    child: const Text(
                       'Cannot be empty',
                       style: TextStyle(color: Colors.red),
                     ),
                   ),
+                  kHeight10,
                   TextField(
                     controller: controller,
-                    style: TextStyle(color: textColor),
+                    style: const TextStyle(color: textColor),
                     decoration: InputDecoration(
                       enabledBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: themeColor)),
@@ -249,7 +308,6 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
               addPlaylist(value);
               Navigator.of(context).pop();
             }
-            print(controller.text.isEmpty);
           }
         },
         style: ElevatedButton.styleFrom(backgroundColor: color),

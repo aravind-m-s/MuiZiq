@@ -38,43 +38,49 @@ class _ScreenSearchState extends State<ScreenSearch> {
             screenTitle('Search'),
             searchTextField(),
             Expanded(
-              child: ListView.separated(
-                  itemBuilder: (context, index) {
-                    return InkWell(
-                      onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (ctx) => ScreenPlay(
-                                    index: index,
-                                    audio: foundList,
-                                    audioPlayer: widget.audioPlayer,
-                                  ))),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 30.0, vertical: 15),
-                        child: Row(
-                          children: [
-                            imageWidget(),
-                            kWidth20,
-                            titleAndAuthor(index),
-                            Row(
+              child: foundList.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No Songs Found',
+                        style: TextStyle(color: textColor, fontSize: 20),
+                      ),
+                    )
+                  : ListView.separated(
+                      itemBuilder: (context, index) {
+                        return InkWell(
+                          onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (ctx) => ScreenPlay(
+                                        index: index,
+                                        audio: foundList,
+                                      ))),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 30.0, vertical: 15),
+                            child: Row(
                               children: [
-                                favButton(index),
-                                kHeight10,
-                                const Icon(
-                                  Icons.playlist_add,
-                                  size: 30,
-                                  color: textColor,
+                                imageWidget(),
+                                kWidth10,
+                                titleAndAuthor(index),
+                                Row(
+                                  children: [
+                                    favButton(index),
+                                    kHeight10,
+                                    const Icon(
+                                      Icons.playlist_add,
+                                      size: 30,
+                                      color: textColor,
+                                    )
+                                  ],
                                 )
                               ],
-                            )
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                  separatorBuilder: (context, index) => listViewDivider(),
-                  itemCount: foundList.length),
+                            ),
+                          ),
+                        );
+                      },
+                      separatorBuilder: (context, index) => listViewDivider(),
+                      itemCount: foundList.length),
             ),
           ],
         ),
@@ -116,7 +122,7 @@ class _ScreenSearchState extends State<ScreenSearch> {
       result = allList;
     } else {
       result = allList
-          .where((element) => element.name.toLowerCase().contains(value))
+          .where((element) => element.name!.toLowerCase().contains(value))
           .toList();
     }
 
@@ -144,13 +150,13 @@ class _ScreenSearchState extends State<ScreenSearch> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            foundList[index].name,
+            foundList[index].name!,
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
             style: const TextStyle(fontSize: 15, color: textColor),
           ),
           Text(
-            foundList[index].artist,
+            foundList[index].artist!,
             style: const TextStyle(fontSize: 11, color: authColor),
           )
         ],

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:hive_flutter/adapters.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
@@ -8,13 +6,16 @@ import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
 import 'package:muiziq_app/screens/screen_play/screen_play.dart';
+import 'package:muiziq_app/screens/screen_settings/screen_settings.dart';
 import 'package:muiziq_app/screens/widgets/logo.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+// ignore: must_be_immutable
 class ScreenHome extends StatefulWidget {
   final AudioPlayer audioPlayer;
-  const ScreenHome({super.key, required this.audioPlayer});
+  List<SongModel> songs = [];
+  ScreenHome({super.key, required this.audioPlayer});
 
   @override
   State<ScreenHome> createState() => _ScreenHomeState();
@@ -40,6 +41,7 @@ class _ScreenHomeState extends State<ScreenHome> {
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
+    widget.songs = songs;
     if (musicDB.values.length < songs.length) {
       musicDB.deleteAll(musicDB.keys);
       for (int i = 0; i < songs.length; i++) {
@@ -90,7 +92,7 @@ class _ScreenHomeState extends State<ScreenHome> {
                   builder: (BuildContext context, List<MusicModel> value,
                       Widget? child) {
                     if (value.isEmpty) {
-                      const Center(
+                      return const Center(
                           child: Text(
                         'No Songs found',
                         style: TextStyle(color: textColor, fontSize: 20),
@@ -113,7 +115,6 @@ class _ScreenHomeState extends State<ScreenHome> {
                                   builder: (ctx) => ScreenPlay(
                                         index: index,
                                         audio: value,
-                                        audioPlayer: widget.audioPlayer,
                                       ))),
                           child: Column(
                             children: [
@@ -153,6 +154,7 @@ class _ScreenHomeState extends State<ScreenHome> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           const FaIcon(
             FontAwesomeIcons.music,
@@ -160,7 +162,20 @@ class _ScreenHomeState extends State<ScreenHome> {
             size: 45,
           ),
           kWidth10,
-          logoText(),
+          Expanded(child: logoText()),
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => const ScreenSettings(),
+                ),
+              );
+            },
+            icon: const Icon(
+              Icons.settings,
+              color: textColor,
+            ),
+          )
         ],
       ),
     );

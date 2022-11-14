@@ -1,4 +1,7 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 // Colors
 
@@ -19,3 +22,23 @@ const kWidth30 = SizedBox(width: 30);
 const kHeight10 = SizedBox(height: 10);
 const kHeight20 = SizedBox(height: 20);
 const kHeight30 = SizedBox(height: 30);
+
+// Statics
+
+AudioPlayer audioPlayer = AudioPlayer();
+ConcatenatingAudioSource createSongList(List<SongModel> songs) {
+  List<AudioSource> sources = [];
+  for (var song in songs) {
+    sources.add(AudioSource.uri(
+      Uri.parse(song.uri!),
+      tag: MediaItem(
+          id: song.id.toString(),
+          title: song.title,
+          album: song.album,
+          artist: song.artist),
+    ));
+  }
+  return ConcatenatingAudioSource(children: sources);
+}
+
+ValueNotifier<bool> isPlaying = ValueNotifier(false);

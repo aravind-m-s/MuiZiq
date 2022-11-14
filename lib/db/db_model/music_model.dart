@@ -4,25 +4,25 @@ part 'music_model.g.dart';
 @HiveType(typeId: 0)
 class MusicModel {
   @HiveField(0)
-  final id;
+  final int id;
 
   @HiveField(1)
-  final uri;
+  final String? uri;
 
   @HiveField(2)
-  final artist;
+  final String? artist;
 
   @HiveField(3)
-  final name;
+  final String? name;
 
   @HiveField(4)
-  final title;
+  final String? title;
 
   @HiveField(5)
-  final album;
+  final String? album;
 
   @HiveField(6)
-  final artistID;
+  final int? artistID;
 
   @HiveField(7)
   bool isFav;

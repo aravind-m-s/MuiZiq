@@ -1,11 +1,10 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
 import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart';
 
 ValueNotifier<List<MusicModel>> musicNotifier = ValueNotifier([]);
+ValueNotifier<List<PlaylistModel>> playlistNotifier = ValueNotifier([]);
 
 getAllMusic() async {
   final musicDb = await Hive.openBox<MusicModel>('musics');
@@ -25,7 +24,6 @@ favOption(index) async {
 addPlaylist(value) async {
   final playlistDB = await Hive.openBox<PlaylistModel>('playlists');
   playlistDB.add(value);
-  log(playlistDB.values.toString());
 }
 
 updatePlaylist(int index, String name) async {
@@ -33,4 +31,11 @@ updatePlaylist(int index, String name) async {
   final value = playlistDB.values.elementAt(index);
   value.name = name;
   playlistDB.putAt(index, value);
+  playlistDB.close();
+}
+
+deletePlaylist(index) async {
+  final playlistDB = await Hive.openBox<PlaylistModel>('playlists');
+  playlistDB.deleteAt(index);
+  playlistDB.close();
 }

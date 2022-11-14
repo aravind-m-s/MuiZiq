@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:muiziq_app/constants/constants.dart';
@@ -56,7 +54,6 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
                               builder: (ctx) => ScreenPlay(
                                     index: index,
                                     audio: value,
-                                    audioPlayer: widget.audioPlayer,
                                   ))),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -66,29 +63,26 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
                             musicImgae(),
                             kWidth20,
                             musicDetails(value, index),
-                            Column(
-                              children: [
-                                IconButton(
-                                  onPressed: () {
-                                    favOption(index);
-                                    setState(() {});
-                                  },
-                                  icon: Icon(
-                                    value[index].isFav
-                                        ? Icons.favorite
-                                        : Icons.favorite_outline,
-                                    color: themeColor,
-                                    size: 30,
-                                  ),
-                                ),
-                                kHeight10,
-                                const Icon(
-                                  Icons.playlist_add,
-                                  size: 30,
-                                  color: textColor,
-                                )
-                              ],
-                            )
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  favOption(index);
+                                });
+                              },
+                              icon: Icon(
+                                value[index].isFav
+                                    ? Icons.favorite
+                                    : Icons.favorite_outline,
+                                color: themeColor,
+                                size: 30,
+                              ),
+                            ),
+                            kWidth10,
+                            const Icon(
+                              Icons.playlist_add,
+                              size: 30,
+                              color: textColor,
+                            ),
                           ],
                         ),
                       ),
@@ -120,11 +114,13 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            value[index].name,
+            value[index].name!,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
             style: const TextStyle(fontSize: 15, color: textColor),
           ),
           Text(
-            value[index].artist,
+            value[index].artist!,
             style: const TextStyle(fontSize: 11, color: authColor),
           )
         ],
@@ -139,5 +135,6 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
     favMusic.value =
         allMusics.where((element) => element.isFav == true).toList();
     favMusic.notifyListeners();
+    setState(() {});
   }
 }

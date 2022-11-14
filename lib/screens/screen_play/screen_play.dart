@@ -1,10 +1,5 @@
 // ignore_for_file: must_be_immutable
-
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
-
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
@@ -15,12 +10,11 @@ ValueNotifier duration = ValueNotifier(const Duration());
 class ScreenPlay extends StatefulWidget {
   int index;
   final List<MusicModel> audio;
-  final AudioPlayer audioPlayer;
+  List<SongModel> songs = [];
   ScreenPlay({
     super.key,
     required this.index,
     required this.audio,
-    required this.audioPlayer,
   });
 
   @override
@@ -30,21 +24,37 @@ class ScreenPlay extends StatefulWidget {
 class _ScreenPlayState extends State<ScreenPlay> {
   ValueNotifier duration = ValueNotifier(const Duration());
   ValueNotifier position = ValueNotifier(const Duration());
+  bool _isPlaying = false;
 
-  bool isPlaying = false;
-  playSong() {
-    widget.audioPlayer.setAudioSource(
-        AudioSource.uri(Uri.parse(widget.audio.elementAt(widget.index).uri)));
-    widget.audioPlayer.play();
-    isPlaying = true;
-    widget.audioPlayer.durationStream.listen((event) {
+  playSong() async {
+    await getSongs();
+    await audioPlayer.setAudioSource(createSongList(widget.songs),
+        initialIndex: widget.index);
+    setState(() {
+      audioPlayer.play();
+    });
+    isPlaying.value = true;
+    isPlaying.notifyListeners();
+    _isPlaying = true;
+    audioPlayer.durationStream.listen((event) {
       duration.value = event;
     });
-    widget.audioPlayer.positionStream.listen((event) {
+    audioPlayer.positionStream.listen((event) {
       position.value = event;
 
       position.notifyListeners();
     });
+  }
+
+  getSongs() async {
+    final audioQuery = OnAudioQuery();
+    final songs = await audioQuery.querySongs(
+      sortType: null,
+      orderType: OrderType.ASC_OR_SMALLER,
+      uriType: UriType.EXTERNAL,
+      ignoreCase: true,
+    );
+    widget.songs = songs;
   }
 
   @override
@@ -80,7 +90,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.audio.elementAt(widget.index).name,
+            widget.audio.elementAt(widget.index).name!,
             overflow: TextOverflow.fade,
             maxLines: 1,
             style: const TextStyle(fontSize: 15, color: textColor),
@@ -88,7 +98,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
           Text(
             widget.audio[widget.index].artist == "<unknown>"
                 ? "Unknown Artist"
-                : widget.audio[widget.index].artist,
+                : widget.audio[widget.index].artist!,
             overflow: TextOverflow.fade,
             maxLines: 1,
             style: const TextStyle(fontSize: 11, color: authColor),
@@ -130,7 +140,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
             ),
             kHeight30,
             Text(
-              widget.audio[widget.index].name,
+              widget.audio[widget.index].name!,
               overflow: TextOverflow.fade,
               maxLines: 1,
               style: const TextStyle(fontSize: 20, color: textColor),
@@ -138,7 +148,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
             Text(
               widget.audio[widget.index].artist == "<unknown>"
                   ? "Unknown Artist"
-                  : widget.audio[widget.index].artist,
+                  : widget.audio[widget.index].artist!,
               overflow: TextOverflow.fade,
               maxLines: 1,
               style: const TextStyle(fontSize: 15, color: authColor),
@@ -205,15 +215,18 @@ class _ScreenPlayState extends State<ScreenPlay> {
 
   IconButton previousSongButton() {
     return IconButton(
-      onPressed: () {
-        setState(
-          () {
-            if (widget.index != 0) {
-              widget.index -= 1;
-              playSong();
-            }
-          },
-        );
+      onPressed: () async {
+        if (audioPlayer.hasPrevious) {
+          await audioPlayer.seekToPrevious();
+          await audioPlayer.play();
+          setState(() {
+            widget.index -= 1;
+            _isPlaying = true;
+          });
+        } else {
+          audioPlayer.play;
+          _isPlaying = true;
+        }
       },
       icon: const Icon(
         Icons.skip_previous,
@@ -234,19 +247,21 @@ class _ScreenPlayState extends State<ScreenPlay> {
           child: Center(
             child: IconButton(
               icon: Icon(
-                isPlaying ? Icons.pause : Icons.play_arrow,
+                _isPlaying ? Icons.pause : Icons.play_arrow,
                 color: textColor,
                 size: 30,
               ),
               onPressed: () {
-                if (isPlaying) {
-                  widget.audioPlayer.pause();
+                if (_isPlaying) {
+                  audioPlayer.pause();
                 } else {
-                  widget.audioPlayer.play();
+                  audioPlayer.play();
                 }
                 setState(
                   () {
-                    isPlaying = !isPlaying;
+                    isPlaying.value = !isPlaying.value;
+                    isPlaying.notifyListeners();
+                    _isPlaying = !_isPlaying;
                   },
                 );
               },
@@ -259,15 +274,18 @@ class _ScreenPlayState extends State<ScreenPlay> {
 
   IconButton nextSongButton() {
     return IconButton(
-      onPressed: () {
-        setState(
-          () {
-            if (widget.index != widget.audio.length - 1) {
-              widget.index += 1;
-              playSong();
-            }
-          },
-        );
+      onPressed: () async {
+        if (audioPlayer.hasNext) {
+          await audioPlayer.seekToNext();
+          await audioPlayer.play();
+          setState(() {
+            _isPlaying = true;
+            widget.index += 1;
+          });
+        } else {
+          _isPlaying = true;
+          audioPlayer.play();
+        }
       },
       icon: const Icon(
         Icons.skip_next,
@@ -281,8 +299,11 @@ class _ScreenPlayState extends State<ScreenPlay> {
     return ValueListenableBuilder(
       valueListenable: position,
       builder: (BuildContext context, value, Widget? child) {
+        // ignore: prefer_const_constructors
         if (value == duration.value && duration.value != Duration()) {
-          widget.audioPlayer.pause();
+          audioPlayer.pause();
+          widget.index += 1;
+          musicDetails();
         }
         return Slider(
           min: 0,
@@ -290,7 +311,8 @@ class _ScreenPlayState extends State<ScreenPlay> {
           max: duration.value.inMilliseconds.toDouble(),
           onChanged: (value) {
             final position = Duration(milliseconds: value.toInt());
-            widget.audioPlayer.seek(position);
+            audioPlayer.seek(position);
+            audioPlayer.play();
           },
           activeColor: themeColor,
           inactiveColor: Colors.black,
