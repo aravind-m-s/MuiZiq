@@ -14,7 +14,7 @@ class ScreenMain extends StatefulWidget {
 }
 
 class _ScreenMainState extends State<ScreenMain> {
-  int currentSelectedIndex = 0;
+  static int currentSelectedIndex = 0;
   @override
   Widget build(BuildContext context) {
     List pages = [
@@ -71,12 +71,13 @@ class _ScreenMainState extends State<ScreenMain> {
                   ),
                   label: 'Favourite'),
               BottomNavigationBarItem(
-                  backgroundColor: bottomNavColor,
-                  icon: Icon(
-                    Icons.playlist_add_check,
-                    size: 25,
-                  ),
-                  label: 'Playlist')
+                backgroundColor: bottomNavColor,
+                icon: Icon(
+                  Icons.playlist_add_check,
+                  size: 25,
+                ),
+                label: 'Playlist',
+              )
             ],
           ),
         ),
@@ -126,20 +127,22 @@ class _ScreenMainState extends State<ScreenMain> {
             Row(
               children: [
                 IconButton(
-                    onPressed: () {
-                      if (audioPlayer.hasPrevious) {
-                        audioPlayer.seekToPrevious();
-                        audioPlayer.play();
-                      } else {
-                        audioPlayer.play();
-                      }
-                      setState(() {});
-                    },
-                    icon: const Icon(
-                      Icons.skip_previous,
-                      color: textColor,
-                      size: 25,
-                    )),
+                  onPressed: () {
+                    if (audioPlayer.hasPrevious) {
+                      audioPlayer.seekToPrevious();
+                      audioPlayer.play();
+                    } else {
+                      audioPlayer.play();
+                    }
+
+                    setState(() {});
+                  },
+                  icon: Icon(
+                    Icons.skip_previous,
+                    color: audioPlayer.hasPrevious ? textColor : Colors.grey,
+                    size: 25,
+                  ),
+                ),
                 CircleAvatar(
                   radius: 23,
                   backgroundColor: themeColor,
@@ -158,20 +161,21 @@ class _ScreenMainState extends State<ScreenMain> {
                       )),
                 ),
                 IconButton(
-                    onPressed: () {
-                      if (audioPlayer.hasNext) {
-                        audioPlayer.seekToNext();
-                        audioPlayer.play();
-                      } else {
-                        audioPlayer.play();
-                      }
-                      setState(() {});
-                    },
-                    icon: const Icon(
-                      Icons.skip_next,
-                      color: textColor,
-                      size: 25,
-                    )),
+                  onPressed: () {
+                    if (audioPlayer.hasNext) {
+                      audioPlayer.seekToNext();
+                      audioPlayer.play();
+                    } else {
+                      audioPlayer.play();
+                    }
+                    setState(() {});
+                  },
+                  icon: const Icon(
+                    Icons.skip_next,
+                    color: textColor,
+                    size: 25,
+                  ),
+                ),
               ],
             )
           ],

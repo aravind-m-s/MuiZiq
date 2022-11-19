@@ -25,11 +25,7 @@ class _ScreenSplashState extends State<ScreenSplash> {
         child: Center(
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const FaIcon(
-            FontAwesomeIcons.music,
-            size: 125,
-            color: themeColor,
-          ),
+          Image(image: AssetImage('lib/assets/background.png')),
           const SizedBox(height: 30),
           logoText(),
           const SizedBox(height: 30),

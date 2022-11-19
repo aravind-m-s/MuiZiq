@@ -1,20 +1,22 @@
 // ignore_for_file: must_be_immutable
+import 'dart:developer';
+import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
-import 'package:muiziq_app/db/db_model/music_model.dart';
+import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:rxdart/rxdart.dart';
 
 ValueNotifier duration = ValueNotifier(const Duration());
 
 class ScreenPlay extends StatefulWidget {
   int index;
-  final List<MusicModel> audio;
   List<SongModel> songs = [];
   ScreenPlay({
     super.key,
     required this.index,
-    required this.audio,
   });
 
   @override
@@ -22,8 +24,7 @@ class ScreenPlay extends StatefulWidget {
 }
 
 class _ScreenPlayState extends State<ScreenPlay> {
-  ValueNotifier duration = ValueNotifier(const Duration());
-  ValueNotifier position = ValueNotifier(const Duration());
+  Duration? dur = Duration();
   bool _isPlaying = false;
 
   playSong() async {
@@ -36,13 +37,29 @@ class _ScreenPlayState extends State<ScreenPlay> {
     isPlaying.value = true;
     isPlaying.notifyListeners();
     _isPlaying = true;
+    audioPlayer.playingStream.listen((event) {
+      if (event) {
+        addToRecent(audio[widget.index].id);
+        log(event.toString());
+      }
+    });
     audioPlayer.durationStream.listen((event) {
-      duration.value = event;
+      dur = event;
     });
     audioPlayer.positionStream.listen((event) {
-      position.value = event;
-
-      position.notifyListeners();
+      if (event == dur && dur != Duration()) {
+        if (audioPlayer.hasNext) {
+          widget.index += 1;
+          audioPlayer.pause();
+          audioPlayer.seekToNext();
+          _isPlaying = true;
+          audioPlayer.play();
+          setState(() {});
+        } else {
+          _isPlaying = true;
+          audioPlayer.play();
+        }
+      }
     });
   }
 
@@ -90,15 +107,15 @@ class _ScreenPlayState extends State<ScreenPlay> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.audio.elementAt(widget.index).name!,
+            audio[widget.index].name!,
             overflow: TextOverflow.fade,
             maxLines: 1,
             style: const TextStyle(fontSize: 15, color: textColor),
           ),
           Text(
-            widget.audio[widget.index].artist == "<unknown>"
+            audio[widget.index].artist == "<unknown>"
                 ? "Unknown Artist"
-                : widget.audio[widget.index].artist!,
+                : audio[widget.index].artist!,
             overflow: TextOverflow.fade,
             maxLines: 1,
             style: const TextStyle(fontSize: 11, color: authColor),
@@ -114,7 +131,12 @@ class _ScreenPlayState extends State<ScreenPlay> {
                 Icons.playlist_add,
                 size: 30,
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (ctx) => AddToPlaylist(
+                          id: audio[widget.index].id,
+                        )));
+              },
             ),
             onPressed: () {},
           ),
@@ -133,22 +155,22 @@ class _ScreenPlayState extends State<ScreenPlay> {
               height: 250,
               width: 250,
               child: QueryArtworkWidget(
-                id: widget.audio[widget.index].id,
+                id: audio[widget.index].id,
                 type: ArtworkType.AUDIO,
-                nullArtworkWidget: Image.asset('lib/assets/default.jpg'),
+                nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
               ),
             ),
             kHeight30,
             Text(
-              widget.audio[widget.index].name!,
+              audio[widget.index].name!,
               overflow: TextOverflow.fade,
               maxLines: 1,
               style: const TextStyle(fontSize: 20, color: textColor),
             ),
             Text(
-              widget.audio[widget.index].artist == "<unknown>"
+              audio[widget.index].artist == "<unknown>"
                   ? "Unknown Artist"
-                  : widget.audio[widget.index].artist!,
+                  : audio[widget.index].artist!,
               overflow: TextOverflow.fade,
               maxLines: 1,
               style: const TextStyle(fontSize: 15, color: authColor),
@@ -179,7 +201,11 @@ class _ScreenPlayState extends State<ScreenPlay> {
               pauseAndPlayButton(),
               nextSongButton(),
               IconButton(
-                onPressed: () {},
+                onPressed: () async {
+                  audioPlayer.loopMode == LoopMode.one
+                      ? await audioPlayer.setLoopMode(LoopMode.all)
+                      : await audioPlayer.setLoopMode(LoopMode.one);
+                },
                 icon: const Icon(
                   Icons.repeat_outlined,
                   color: themeColor,
@@ -190,7 +216,6 @@ class _ScreenPlayState extends State<ScreenPlay> {
           Column(
             children: [
               sliderMethod(),
-              durationMethod(),
             ],
           )
         ],
@@ -201,13 +226,11 @@ class _ScreenPlayState extends State<ScreenPlay> {
   IconButton favoriteButton() {
     return IconButton(
       onPressed: () {
-        favOption(widget.index);
+        favOption(audio[widget.index].id, context);
         setState(() {});
       },
       icon: Icon(
-        widget.audio[widget.index].isFav
-            ? Icons.favorite
-            : Icons.favorite_outline,
+        audio[widget.index].isFav ? Icons.favorite : Icons.favorite_outline,
         color: themeColor,
       ),
     );
@@ -217,11 +240,14 @@ class _ScreenPlayState extends State<ScreenPlay> {
     return IconButton(
       onPressed: () async {
         if (audioPlayer.hasPrevious) {
-          await audioPlayer.seekToPrevious();
-          await audioPlayer.play();
+          audioPlayer.pause();
+          audioPlayer.seekToPrevious();
+          audioPlayer.play();
+          widget.index -= 1;
+          _isPlaying = true;
+
           setState(() {
-            widget.index -= 1;
-            _isPlaying = true;
+            musicDetails();
           });
         } else {
           audioPlayer.play;
@@ -274,14 +300,14 @@ class _ScreenPlayState extends State<ScreenPlay> {
 
   IconButton nextSongButton() {
     return IconButton(
-      onPressed: () async {
+      onPressed: () {
         if (audioPlayer.hasNext) {
-          await audioPlayer.seekToNext();
-          await audioPlayer.play();
-          setState(() {
-            _isPlaying = true;
-            widget.index += 1;
-          });
+          widget.index += 1;
+          audioPlayer.pause();
+          audioPlayer.seekToNext();
+          _isPlaying = true;
+          audioPlayer.play();
+          setState(() {});
         } else {
           _isPlaying = true;
           audioPlayer.play();
@@ -295,53 +321,43 @@ class _ScreenPlayState extends State<ScreenPlay> {
     );
   }
 
-  ValueListenableBuilder<dynamic> sliderMethod() {
-    return ValueListenableBuilder(
-      valueListenable: position,
-      builder: (BuildContext context, value, Widget? child) {
-        // ignore: prefer_const_constructors
-        if (value == duration.value && duration.value != Duration()) {
-          audioPlayer.pause();
-          widget.index += 1;
-          musicDetails();
-        }
-        return Slider(
-          min: 0,
-          value: value.inMilliseconds.toDouble(),
-          max: duration.value.inMilliseconds.toDouble(),
-          onChanged: (value) {
-            final position = Duration(milliseconds: value.toInt());
-            audioPlayer.seek(position);
-            audioPlayer.play();
-          },
-          activeColor: themeColor,
-          inactiveColor: Colors.black,
-        );
-      },
-    );
-  }
-
-  Padding durationMethod() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: ValueListenableBuilder(
-        valueListenable: position,
-        builder: (BuildContext context, value, Widget? child) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                value.toString().split('.')[0],
-                style: const TextStyle(color: themeColor),
-              ),
-              Text(
-                duration.value.toString().split('.')[0],
-                style: const TextStyle(color: themeColor),
-              ),
-            ],
+  sliderMethod() {
+    return StreamBuilder<DurationState>(
+        stream: _durationStateStream,
+        builder: (context, snapshot) {
+          final durationState = snapshot.data;
+          final progress = durationState?.position ?? Duration.zero;
+          final total = durationState?.total ?? Duration.zero;
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: ProgressBar(
+                timeLabelTextStyle: const TextStyle(
+                    color: themeColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15),
+                progress: progress,
+                total: total,
+                // barHeight: 3.0,
+                // thumbRadius: 5,
+                progressBarColor: themeColor,
+                thumbColor: themeColor,
+                baseBarColor: Colors.black,
+                onSeek: (duration) {
+                  audioPlayer.seek(duration);
+                }),
           );
-        },
-      ),
-    );
+        });
   }
+}
+
+Stream<DurationState> get _durationStateStream =>
+    Rx.combineLatest2<Duration, Duration?, DurationState>(
+        audioPlayer.positionStream,
+        audioPlayer.durationStream,
+        (position, duration) => DurationState(
+            position: position, total: duration ?? Duration.zero));
+
+class DurationState {
+  DurationState({this.position = Duration.zero, this.total = Duration.zero});
+  Duration position, total;
 }

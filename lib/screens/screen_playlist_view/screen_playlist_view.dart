@@ -4,6 +4,7 @@ import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
 import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart';
 import 'package:muiziq_app/screens/screen_add_songs/screen_add_songs.dart';
+import 'package:muiziq_app/screens/screen_play/screen_play.dart';
 
 List<MusicModel> allPlaylistSongs = [];
 
@@ -18,9 +19,12 @@ class ScreenPlaylistView extends StatefulWidget {
 }
 
 class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
+  TextEditingController controller = TextEditingController();
+
   @override
   void initState() {
     listPlaylist();
+    controller.text = widget.playlistData.name;
     super.initState();
   }
 
@@ -45,6 +49,16 @@ class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
           ),
         ),
         backgroundColor: bgPrimary,
+        actions: [
+          IconButton(
+              onPressed: () {
+                editPlaylistDialog();
+              },
+              icon: const Icon(
+                Icons.edit,
+                color: themeColor,
+              ))
+        ],
       ),
       body: widget.playlistData.songIds.isEmpty
           ? Center(
@@ -81,6 +95,17 @@ class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
           : ListView.separated(
               itemBuilder: (context, index) {
                 return InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (ctx) => ScreenPlay(
+                          index: indexFinder(
+                            allPlaylistSongs[index],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 25.0, vertical: 8),
@@ -92,7 +117,7 @@ class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(25),
                               image: const DecorationImage(
-                                  image: AssetImage('lib/assets/default.jpg'))),
+                                  image: AssetImage('lib/assets/MuiZiq.png'))),
                         ),
                         kWidth20,
                         Expanded(
@@ -116,8 +141,8 @@ class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
                         ),
                         IconButton(
                             onPressed: () {
-                              widget.playlistData
-                                  .deleteData(allPlaylistSongs[index].id);
+                              widget.playlistData.deleteData(
+                                  allPlaylistSongs[index].id, context);
                               setState(() {
                                 listPlaylist();
                               });
@@ -151,5 +176,70 @@ class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
         }
       }
     }
+  }
+
+  indexFinder(MusicModel data) {
+    List<MusicModel> list = musicNotifier.value;
+    return list.indexOf(data);
+  }
+
+  editPlaylistDialog() {
+    return showDialog(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            backgroundColor: bgPrimary,
+            title: const Center(
+              child: Text(
+                'Edit Playlist',
+                style: TextStyle(color: themeColor),
+              ),
+            ),
+            content: TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                label: const Text(
+                  'Playlist Name',
+                  style: TextStyle(color: textColor),
+                ),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: BorderSide(color: themeColor)),
+              ),
+              style: const TextStyle(color: textColor),
+            ),
+            actions: [
+              SizedBox(
+                width: 125,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: textColor),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+              SizedBox(
+                width: 125,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
+                  child: const Text('Ok'),
+                  onPressed: () {
+                    updatePlaylist(widget.index, controller.text, context);
+                    Navigator.of(context).pop();
+                    setState(() {});
+                  },
+                ),
+              )
+            ],
+          );
+        });
   }
 }

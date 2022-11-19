@@ -1,32 +1,71 @@
-import 'package:flutter/material.dart';
-import 'package:muiziq_app/constants/constants.dart';
+import 'dart:developer';
 
-class ScreenMostPlayed extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:muiziq_app/constants/constants.dart';
+import 'package:muiziq_app/db/db_functions/db_functions.dart';
+import 'package:muiziq_app/db/db_model/music_model.dart';
+import 'package:muiziq_app/db/db_model/recent_model/recent_model.dart';
+import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist.dart';
+
+class ScreenMostPlayed extends StatefulWidget {
   const ScreenMostPlayed({super.key});
+
+  @override
+  State<ScreenMostPlayed> createState() => _ScreenMostPlayedState();
+}
+
+class _ScreenMostPlayedState extends State<ScreenMostPlayed> {
+  ValueNotifier<List<MusicModel>> recent = ValueNotifier([]);
+
+  adding() async {
+    await addAllRecent();
+    getAllRecentList();
+  }
+
+  @override
+  void initState() {
+    adding();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          leading: IconButton(
-              icon: const Icon(
-                Icons.arrow_back,
-                color: themeColor,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              }),
-          title: const Text(
-            'Most Played',
-            style: TextStyle(
-              color: textColor,
-              fontSize: 35,
+      appBar: AppBar(
+        elevation: 0,
+        leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+              color: themeColor,
             ),
+            onPressed: () {
+              Navigator.pop(context);
+            }),
+        title: const Text(
+          'Most Played',
+          style: TextStyle(
+            color: textColor,
+            fontSize: 35,
           ),
-          backgroundColor: bgPrimary,
         ),
-        body: ListView.separated(
+        backgroundColor: bgPrimary,
+      ),
+      body: ValueListenableBuilder(
+        valueListenable: recent,
+        builder: (context, value, child) {
+          if (value.isEmpty) {
+            return const Center(
+              child: Text(
+                "Not enought song details",
+                style: TextStyle(
+                  fontSize: 20,
+                  color: textColor,
+                ),
+              ),
+            );
+          }
+          return ListView.separated(
             itemBuilder: (context, index) {
               return InkWell(
                 child: Padding(
@@ -40,7 +79,7 @@ class ScreenMostPlayed extends StatelessWidget {
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(25),
                             image: const DecorationImage(
-                                image: AssetImage('lib/assets/default.jpg'))),
+                                image: AssetImage('lib/assets/MuiZiq.png'))),
                       ),
                       kWidth20,
                       Expanded(
@@ -48,44 +87,76 @@ class ScreenMostPlayed extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "Music No $index",
+                              value[index].name!,
                               style: const TextStyle(
                                   fontSize: 15, color: textColor),
                             ),
                             Text(
-                              "Author $index",
+                              value[index].artist!,
                               style: const TextStyle(
                                   fontSize: 11, color: authColor),
                             )
                           ],
                         ),
                       ),
-                      Column(
-                        children: const [
-                          Icon(
-                            Icons.favorite,
-                            color: themeColor,
-                            size: 30,
-                          ),
-                          kHeight10,
-                          Icon(
+                      IconButton(
+                        onPressed: () => setState(() {
+                          favOption(value[index].id, context);
+                        }),
+                        icon: Icon(
+                          value[index].isFav
+                              ? Icons.favorite
+                              : Icons.favorite_outline,
+                          color: themeColor,
+                          size: 30,
+                        ),
+                      ),
+                      kHeight10,
+                      IconButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => AddToPlaylist(
+                                  id: value[index].id,
+                                ),
+                              ),
+                            );
+                          },
+                          icon: Icon(
                             Icons.playlist_add,
                             size: 30,
                             color: textColor,
-                          )
-                        ],
-                      )
+                          ))
                     ],
                   ),
                 ),
               );
             },
             separatorBuilder: (context, index) => const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 40.0),
-                  child: Divider(
-                    color: themeColor,
-                  ),
-                ),
-            itemCount: 10));
+              padding: EdgeInsets.symmetric(horizontal: 40.0),
+              child: Divider(
+                color: themeColor,
+              ),
+            ),
+            itemCount: recent.value.length,
+          );
+        },
+      ),
+    );
+  }
+
+  getAllRecentList() {
+    recent.value.clear();
+    final List<RecentModel> list =
+        recentNotifier.value.where((element) => element.count > 5).toList();
+
+    for (int i = list.length - 1; i >= 0; i--) {
+      for (int j = 0; j < musicNotifier.value.length; j++) {
+        if (list[i].songIds == musicNotifier.value[j].id) {
+          recent.value.add(musicNotifier.value[j]);
+        }
+      }
+    }
+    recent.notifyListeners();
   }
 }

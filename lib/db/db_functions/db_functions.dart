@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
 import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart';
+import 'package:muiziq_app/db/db_model/recent_model/recent_model.dart';
+import 'package:muiziq_app/screens/widgets/snacbar.dart';
 
 ValueNotifier<List<MusicModel>> musicNotifier = ValueNotifier([]);
 ValueNotifier<List<PlaylistModel>> playlistNotifier = ValueNotifier([]);
+ValueNotifier<List<RecentModel>> recentNotifier = ValueNotifier([]);
 
 getAllMusic() async {
   final musicDb = await Hive.openBox<MusicModel>('musics');
@@ -13,20 +16,29 @@ getAllMusic() async {
   musicNotifier.notifyListeners();
 }
 
-favOption(index) async {
+favOption(index, context) async {
   final musicDb = await Hive.openBox<MusicModel>('musics');
-  final value = musicDb.values.elementAt(index);
+  List list = [];
+  list.addAll(musicDb.values);
+  final value =
+      musicDb.values.where((element) => element.id == index).toList()[0];
   value.isFav = !value.isFav;
-  musicDb.putAt(index, value);
+  value.isFav
+      ? snacbarWidget(context, 'Song added to favorites')
+      : warningSncakbar(context, 'Song removed from favorites');
+  final int pos = list.indexOf(value);
+  musicDb.putAt(pos, value);
   getAllMusic();
 }
 
-addPlaylist(value) async {
+addPlaylist(PlaylistModel value, BuildContext context) async {
+  snacbarWidget(context, 'Playlist added succefully');
   final playlistDB = await Hive.openBox<PlaylistModel>('playlists');
   playlistDB.add(value);
 }
 
-updatePlaylist(int index, String name) async {
+updatePlaylist(int index, String name, BuildContext context) async {
+  snacbarWidget(context, 'Playlist Edited succefully');
   final playlistDB = await Hive.openBox<PlaylistModel>('playlists');
   final value = playlistDB.values.elementAt(index);
   value.name = name;
@@ -34,8 +46,48 @@ updatePlaylist(int index, String name) async {
   playlistDB.close();
 }
 
-deletePlaylist(index) async {
+deletePlaylist(int index, BuildContext context) async {
+  snacbarWidget(context, 'Playlist removed succefully');
+
   final playlistDB = await Hive.openBox<PlaylistModel>('playlists');
   playlistDB.deleteAt(index);
   playlistDB.close();
+}
+
+addToRecent(int value) async {
+  final recentDB = await Hive.openBox<RecentModel>('recent');
+  List<RecentModel> db = [];
+  db.addAll(recentDB.values);
+  if (recentDB.isNotEmpty) {
+    if (db[0].songIds != value) {
+      var ele =
+          recentDB.values.where((element) => element.songIds == value).toList();
+      if (ele.isEmpty) {
+        final val = RecentModel(songIds: value, count: 0);
+        recentDB.add(val);
+      } else {
+        final list = db.where((element) => element.songIds != value).toList();
+        int count = ele[0].count + 1;
+
+        final val = RecentModel(songIds: value, count: count);
+        list.add(val);
+
+        recentDB.deleteAll(recentDB.keys);
+        for (int i = 0; i < list.length; i++) {
+          recentDB.add(list[i]);
+        }
+      }
+    } else {}
+  } else {
+    final val = RecentModel(songIds: value, count: 0);
+    recentDB.add(val);
+  }
+}
+
+addAllRecent() async {
+  final recentDB = await Hive.openBox<RecentModel>('recent');
+  recentNotifier.value.clear();
+  recentNotifier.value.addAll(recentDB.values);
+  recentNotifier.notifyListeners();
+  recentDB.close();
 }

@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart';
-import 'package:muiziq_app/screens/screen_most_played/screen_most_played.dart';
-import 'package:muiziq_app/screens/screen_playlist_view/screen_playlist_view.dart';
-import 'package:muiziq_app/screens/screen_recent_played/screen_recent_played.dart';
 import 'package:muiziq_app/screens/widgets/screen_title.dart';
+import 'package:muiziq_app/screens/widgets/snacbar.dart';
 
 bool isVisible = false;
 
-class ScreenPlaylist extends StatefulWidget {
-  final AudioPlayer audioPlayer;
-  const ScreenPlaylist({super.key, required this.audioPlayer});
+class AddToPlaylist extends StatefulWidget {
+  final int id;
+  const AddToPlaylist({super.key, required this.id});
 
   @override
-  State<ScreenPlaylist> createState() => _ScreenPlaylistState();
+  State<AddToPlaylist> createState() => _AddToPlaylistState();
 }
 
-class _ScreenPlaylistState extends State<ScreenPlaylist> {
+class _AddToPlaylistState extends State<AddToPlaylist> {
   ValueNotifier<List<PlaylistModel>> list = ValueNotifier([]);
+
+  TextEditingController controller = TextEditingController();
 
   getValuesFromDatabase() async {
     final db = await Hive.openBox<PlaylistModel>('playlists');
@@ -44,7 +43,6 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
                   child: ValueListenableBuilder(
                     valueListenable: list,
                     builder: (context, List<PlaylistModel> value, child) {
-                      getValuesFromDatabase();
                       if (value.isEmpty) {
                         return const Center(
                             child: Text("No Playlist Created yet",
@@ -61,15 +59,11 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
                                   crossAxisSpacing: 20),
                           itemBuilder: (context, index) {
                             return InkWell(
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (ctx) => ScreenPlaylistView(
-                                    playlistData: value[index],
-                                    index: index,
-                                  ),
-                                ),
-                              ),
+                              onTap: () {
+                                value[index].addData(widget.id, context);
+
+                                Navigator.of(context).pop();
+                              },
                               child: Column(
                                 children: [
                                   Stack(children: [
@@ -110,12 +104,6 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
                     },
                   )),
             ),
-            kHeight20,
-            buttonWidget('Most Played', const ScreenMostPlayed(), context),
-            kHeight20,
-            buttonWidget(
-                'Recently Played', const ScreenRecentPlayed(), context),
-            kHeight20
           ],
         ),
       ),
@@ -125,32 +113,6 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
           addPlaylistPopUP(context);
         },
         child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  buttonWidget(data, event, context) {
-    return SizedBox(
-      height: 50,
-      width: double.infinity,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: bottomNavColor),
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (ctx) => event));
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                data,
-                style: const TextStyle(fontSize: 18, color: textColor),
-              ),
-              const Icon(Icons.chevron_right)
-            ],
-          ),
-        ),
       ),
     );
   }

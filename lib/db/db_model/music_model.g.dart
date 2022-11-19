@@ -17,13 +17,13 @@ class MusicModelAdapter extends TypeAdapter<MusicModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return MusicModel(
-      id: fields[0] as dynamic,
-      uri: fields[1] as dynamic,
-      artist: fields[2] as dynamic,
-      name: fields[3] as dynamic,
-      title: fields[4] as dynamic,
-      album: fields[5] as dynamic,
-      artistID: fields[6] as dynamic,
+      id: fields[0] as int,
+      uri: fields[1] as String?,
+      artist: fields[2] as String?,
+      name: fields[3] as String?,
+      title: fields[4] as String?,
+      album: fields[5] as String?,
+      artistID: fields[6] as int?,
       isFav: fields[7] as bool,
     );
   }

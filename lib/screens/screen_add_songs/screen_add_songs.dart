@@ -54,7 +54,8 @@ class _ScreenAddSongsState extends State<ScreenAddSongs> {
                             kWidth10,
                             IconButton(
                                 onPressed: () {
-                                  widget.playlist.addData(value[index].id);
+                                  widget.playlist
+                                      .addData(value[index].id, context);
                                 },
                                 icon: const Icon(
                                   Icons.playlist_add,
@@ -82,7 +83,7 @@ class _ScreenAddSongsState extends State<ScreenAddSongs> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
         image: const DecorationImage(
-          image: AssetImage('lib/assets/default.jpg'),
+          image: AssetImage('lib/assets/MuiZiq.png'),
         ),
       ),
     );
@@ -111,7 +112,7 @@ class _ScreenAddSongsState extends State<ScreenAddSongs> {
   IconButton favButton(value, index) {
     return IconButton(
       onPressed: () {
-        favOption(index);
+        favOption(value[index].id, context);
         setState(() {});
       },
       icon: Icon(

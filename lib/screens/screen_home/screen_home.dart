@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
+import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist.dart';
 import 'package:muiziq_app/screens/screen_play/screen_play.dart';
 import 'package:muiziq_app/screens/screen_settings/screen_settings.dart';
 import 'package:muiziq_app/screens/widgets/logo.dart';
@@ -98,44 +99,37 @@ class _ScreenHomeState extends State<ScreenHome> {
                         style: TextStyle(color: textColor, fontSize: 20),
                       ));
                     }
-                    return GridView.builder(
-                      itemCount: value.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 20,
-                        mainAxisExtent: 175,
-                        mainAxisSpacing: 25,
+                    return ListView.separated(
+                      separatorBuilder: (context, index) => const Divider(
+                        color: themeColor,
                       ),
+                      itemCount: value.length,
                       itemBuilder: (context, index) {
                         return InkWell(
                           onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (ctx) => ScreenPlay(
-                                        index: index,
-                                        audio: value,
-                                      ))),
-                          child: Column(
-                            children: [
-                              musicImageAndFavIcon(index, value),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 8.0, horizontal: 15),
-                                child: Row(
+                            context,
+                            MaterialPageRoute(
+                              builder: (ctx) => ScreenPlay(index: index),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                musicImage(),
+                                musicDetails(value, index),
+                                Row(
                                   mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                      MainAxisAlignment.spaceAround,
                                   children: [
-                                    musicDetails(value, index),
-                                    const Icon(
-                                      Icons.playlist_add,
-                                      size: 30,
-                                      color: textColor,
-                                    )
+                                    favButton(index, value),
+                                    playlistButton(value[index].id)
                                   ],
-                                ),
-                              )
-                            ],
+                                )
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -150,14 +144,30 @@ class _ScreenHomeState extends State<ScreenHome> {
     );
   }
 
+  IconButton playlistButton(int songID) {
+    return IconButton(
+      onPressed: () {
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (ctx) => AddToPlaylist(
+                  id: songID,
+                )));
+      },
+      icon: const Icon(
+        Icons.playlist_add,
+        size: 30,
+      ),
+      color: textColor,
+    );
+  }
+
   Padding topLogo() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          const FaIcon(
-            FontAwesomeIcons.music,
+          const Icon(
+            Icons.music_note,
             color: themeColor,
             size: 45,
           ),
@@ -181,42 +191,41 @@ class _ScreenHomeState extends State<ScreenHome> {
     );
   }
 
-  Stack musicImageAndFavIcon(int index, List<MusicModel> value) {
-    return Stack(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(25),
-              image: const DecorationImage(
-                image: AssetImage('lib/assets/default.jpg'),
-              )),
-          height: 125,
-          width: 125,
-        ),
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: IconButton(
-            onPressed: () => favOption(index),
-            icon: Icon(
-              value[index].isFav ? Icons.favorite : Icons.favorite_outline,
-              color: themeColor,
-            ),
-          ),
-        ),
-      ],
+  musicImage() {
+    return Container(
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          image: const DecorationImage(
+            image: AssetImage('lib/assets/MuiZiq.png'),
+            fit: BoxFit.cover,
+          )),
+      height: 70,
+      width: 70,
+    );
+  }
+
+  IconButton favButton(int index, List<MusicModel> value) {
+    return IconButton(
+      onPressed: () => setState(() {
+        favOption(value[index].id, context);
+      }),
+      icon: Icon(
+        value[index].isFav ? Icons.favorite : Icons.favorite_outline,
+        color: themeColor,
+      ),
     );
   }
 
   Column musicDetails(List<MusicModel> value, int index) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          audioName(value[index].name),
+          audioName(value[index].name!),
           style: const TextStyle(fontSize: 15, color: textColor),
         ),
         Text(
-          artistName(value[index].album),
+          artistName(value[index].album!),
           style: const TextStyle(fontSize: 10, color: authColor),
         )
       ],
@@ -225,7 +234,7 @@ class _ScreenHomeState extends State<ScreenHome> {
 
   audioName(name) {
     try {
-      return '${name.substring(0, 10)}...';
+      return '${name.substring(0, 15)}...';
     } catch (e) {
       int length = name.length;
       return name.substring(0, length);
@@ -234,10 +243,19 @@ class _ScreenHomeState extends State<ScreenHome> {
 
   artistName(name) {
     try {
-      return '${name.substring(0, 15)}...';
+      return '${name.substring(0, 12)}...';
     } catch (e) {
       int length = name.length;
       return name.substring(0, length);
     }
+  }
+
+  ValueNotifier<List<PlaylistModel>> list = ValueNotifier([]);
+
+  getValuesFromDatabase() async {
+    final db = await Hive.openBox<PlaylistModel>('playlists');
+    list.value.clear();
+    list.value.addAll(db.values);
+    list.notifyListeners();
   }
 }

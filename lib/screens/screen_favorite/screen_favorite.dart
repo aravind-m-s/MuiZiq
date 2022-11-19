@@ -3,6 +3,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
+import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist.dart';
 import 'package:muiziq_app/screens/screen_play/screen_play.dart';
 import 'package:muiziq_app/screens/widgets/list_view_divider.dart';
 import 'package:muiziq_app/screens/widgets/screen_title.dart';
@@ -28,6 +29,7 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
 
   @override
   Widget build(BuildContext context) {
+    getFavMusics();
     return Scaffold(
       body: SafeArea(
           child: Column(
@@ -52,9 +54,7 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
                           context,
                           MaterialPageRoute(
                               builder: (ctx) => ScreenPlay(
-                                    index: index,
-                                    audio: value,
-                                  ))),
+                                  index: indexFinder(favMusic.value[index])))),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 30.0, vertical: 15),
@@ -66,7 +66,7 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
                             IconButton(
                               onPressed: () {
                                 setState(() {
-                                  favOption(index);
+                                  favOption(value[index].id, context);
                                 });
                               },
                               icon: Icon(
@@ -78,9 +78,18 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
                               ),
                             ),
                             kWidth10,
-                            const Icon(
-                              Icons.playlist_add,
-                              size: 30,
+                            IconButton(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (ctx) => AddToPlaylist(
+                                      id: value[index].id,
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: Icon(Icons.playlist_add),
+                              iconSize: 30,
                               color: textColor,
                             ),
                           ],
@@ -104,7 +113,7 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(25),
           image: const DecorationImage(
-              image: AssetImage('lib/assets/default.jpg'))),
+              image: AssetImage('lib/assets/MuiZiq.png'))),
     );
   }
 
@@ -136,5 +145,10 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
         allMusics.where((element) => element.isFav == true).toList();
     favMusic.notifyListeners();
     setState(() {});
+  }
+
+  indexFinder(data) {
+    List<MusicModel> list = musicNotifier.value;
+    return list.indexOf(data);
   }
 }
