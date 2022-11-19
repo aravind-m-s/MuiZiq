@@ -139,7 +139,9 @@ class _ScreenMainState extends State<ScreenMain> {
                   },
                   icon: Icon(
                     Icons.skip_previous,
-                    color: audioPlayer.hasPrevious ? textColor : Colors.grey,
+                    color: audioPlayer.hasPrevious
+                        ? textColor
+                        : Colors.grey.withOpacity(0.5),
                     size: 25,
                   ),
                 ),
@@ -170,9 +172,11 @@ class _ScreenMainState extends State<ScreenMain> {
                     }
                     setState(() {});
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.skip_next,
-                    color: textColor,
+                    color: audioPlayer.hasNext
+                        ? textColor
+                        : Colors.grey.withOpacity(0.5),
                     size: 25,
                   ),
                 ),

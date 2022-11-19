@@ -9,8 +9,6 @@ import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:rxdart/rxdart.dart';
 
-ValueNotifier duration = ValueNotifier(const Duration());
-
 class ScreenPlay extends StatefulWidget {
   int index;
   List<SongModel> songs = [];
@@ -197,9 +195,11 @@ class _ScreenPlayState extends State<ScreenPlay> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               favoriteButton(),
+              reverse10sec(),
               previousSongButton(),
               pauseAndPlayButton(),
               nextSongButton(),
+              skip10sec(),
               IconButton(
                 onPressed: () async {
                   audioPlayer.loopMode == LoopMode.one
@@ -219,6 +219,42 @@ class _ScreenPlayState extends State<ScreenPlay> {
             ],
           )
         ],
+      ),
+    );
+  }
+
+  reverse10sec() {
+    return IconButton(
+      onPressed: () {
+        var x = audioPlayer.position + Duration(seconds: -10);
+        if (x.isNegative) {
+          audioPlayer.seek(Duration(seconds: 0));
+        } else {
+          audioPlayer.seek(x);
+        }
+      },
+      icon: const Icon(
+        Icons.replay_10,
+        color: textColor,
+        size: 30,
+      ),
+    );
+  }
+
+  skip10sec() {
+    return IconButton(
+      onPressed: () {
+        var x = audioPlayer.position + Duration(seconds: 10);
+        if (x > dur!) {
+          audioPlayer.seek(dur! - Duration(milliseconds: 250));
+        } else {
+          audioPlayer.seek(x);
+        }
+      },
+      icon: const Icon(
+        Icons.forward_10,
+        color: textColor,
+        size: 30,
       ),
     );
   }
@@ -254,21 +290,22 @@ class _ScreenPlayState extends State<ScreenPlay> {
           _isPlaying = true;
         }
       },
-      icon: const Icon(
+      icon: Icon(
         Icons.skip_previous,
         size: 35,
-        color: textColor,
+        color:
+            audioPlayer.hasPrevious ? textColor : Colors.grey.withOpacity(0.5),
       ),
     );
   }
 
   CircleAvatar pauseAndPlayButton() {
     return CircleAvatar(
-      radius: 50,
+      radius: 40,
       backgroundColor: const Color(0xFF212A2D),
       child: Center(
         child: CircleAvatar(
-          radius: 40,
+          radius: 30,
           backgroundColor: const Color(0xFFFF9E49),
           child: Center(
             child: IconButton(
@@ -313,10 +350,10 @@ class _ScreenPlayState extends State<ScreenPlay> {
           audioPlayer.play();
         }
       },
-      icon: const Icon(
+      icon: Icon(
         Icons.skip_next,
         size: 35,
-        color: textColor,
+        color: audioPlayer.hasNext ? textColor : Colors.grey.withOpacity(0.5),
       ),
     );
   }
