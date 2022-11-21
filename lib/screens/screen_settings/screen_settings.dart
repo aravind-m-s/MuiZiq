@@ -1,10 +1,19 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-class ScreenSettings extends StatelessWidget {
+bool val = false;
+
+class ScreenSettings extends StatefulWidget {
   const ScreenSettings({super.key});
 
+  @override
+  State<ScreenSettings> createState() => _ScreenSettingsState();
+}
+
+class _ScreenSettingsState extends State<ScreenSettings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -12,17 +21,23 @@ class ScreenSettings extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            SizedBox(height: 50),
+            const SizedBox(height: 50),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Column(
                 children: [
                   sendMail(),
-                  kHeight30,
+                  kHeight10,
+                  const Divider(color: themeColor),
+                  kHeight10,
                   termsAndConditions(),
-                  kHeight30,
+                  kHeight10,
+                  const Divider(color: themeColor),
+                  kHeight10,
                   privacyPolicy(),
-                  kHeight30,
+                  kHeight10,
+                  const Divider(color: themeColor),
+                  whatsappFilter(),
                 ],
               ),
             ),
@@ -53,6 +68,33 @@ class ScreenSettings extends StatelessWidget {
             'Give a feedback',
             style: TextStyle(color: textColor, fontSize: 18),
           ),
+        ],
+      ),
+    );
+  }
+
+  whatsappFilter() {
+    return InkWell(
+      onTap: () {},
+      child: Row(
+        children: [
+          Icon(Icons.whatsapp, color: textColor),
+          kWidth10,
+          Text(
+            'Filter Whatsapp Audios',
+            style: TextStyle(color: textColor, fontSize: 18),
+          ),
+          kWidth20,
+          Switch(
+            value: val,
+            onChanged: (value) {
+              setState(() {
+                val = value;
+              });
+            },
+            activeColor: themeColor,
+            inactiveThumbColor: themeColor,
+          )
         ],
       ),
     );
