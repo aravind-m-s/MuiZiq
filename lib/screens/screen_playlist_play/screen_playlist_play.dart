@@ -4,29 +4,35 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
+import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart'
+    as pd;
 import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:rxdart/rxdart.dart';
 
-class ScreenPlay extends StatefulWidget {
+class ScreenPlaylistPlay extends StatefulWidget {
   int index;
-  List<SongModel> songs = [];
-  ScreenPlay({
-    super.key,
-    required this.index,
-  });
+  final pd.PlaylistModel playlistData;
+  final allSongs;
+  ScreenPlaylistPlay(
+      {super.key,
+      required this.index,
+      required this.playlistData,
+      required this.allSongs});
 
   @override
-  State<ScreenPlay> createState() => _ScreenPlayState();
+  State<ScreenPlaylistPlay> createState() => _ScreenPlaylistPlayState();
 }
 
-class _ScreenPlayState extends State<ScreenPlay> {
+class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
+  List<SongModel> playlistSongs = [];
+
   Duration? dur = Duration();
   bool _isPlaying = false;
 
   playSong() async {
-    await getSongs();
-    await audioPlayer.setAudioSource(createSongList(widget.songs),
+    await playlistToSongModel();
+    await audioPlayer.setAudioSource(createSongList(playlistSongs),
         initialIndex: widget.index);
     setState(() {
       audioPlayer.play();
@@ -36,16 +42,14 @@ class _ScreenPlayState extends State<ScreenPlay> {
     _isPlaying = true;
     audioPlayer.playingStream.listen((event) {
       if (event) {
-        addToRecent(audio[widget.index].id);
+        addToRecent(widget.allSongs[widget.index].id);
       }
     });
     audioPlayer.durationStream.listen((event) {
       dur = event;
     });
     audioPlayer.positionStream.listen((event) {
-      if (event == dur &&
-          dur != Duration() &&
-          audioPlayer.loopMode != LoopMode.one) {
+      if (event == dur && dur != Duration()) {
         if (audioPlayer.hasNext) {
           widget.index += 1;
           audioPlayer.pause();
@@ -61,7 +65,8 @@ class _ScreenPlayState extends State<ScreenPlay> {
     });
   }
 
-  getSongs() async {
+  playlistToSongModel() async {
+    final List<SongModel> playlist = [];
     final audioQuery = OnAudioQuery();
     final songs = await audioQuery.querySongs(
       sortType: null,
@@ -69,7 +74,11 @@ class _ScreenPlayState extends State<ScreenPlay> {
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
-    widget.songs = songs;
+    for (var song in widget.playlistData.songIds) {
+      final temp = songs.where((element) => element.id == song).toList()[0];
+      playlist.add(temp);
+    }
+    playlistSongs = playlist;
   }
 
   @override
@@ -105,15 +114,15 @@ class _ScreenPlayState extends State<ScreenPlay> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            audio[widget.index].name!,
+            widget.allSongs[widget.index].name!,
             overflow: TextOverflow.fade,
             maxLines: 1,
             style: const TextStyle(fontSize: 15, color: textColor),
           ),
           Text(
-            audio[widget.index].artist == "<unknown>"
+            widget.allSongs[widget.index].artist == "<unknown>"
                 ? "Unknown Artist"
-                : audio[widget.index].artist!,
+                : widget.allSongs[widget.index].artist!,
             overflow: TextOverflow.fade,
             maxLines: 1,
             style: const TextStyle(fontSize: 11, color: authColor),
@@ -132,7 +141,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (ctx) => AddToPlaylist(
-                          id: audio[widget.index].id,
+                          id: widget.allSongs[widget.index].id,
                         )));
               },
             ),
@@ -153,22 +162,22 @@ class _ScreenPlayState extends State<ScreenPlay> {
               height: 250,
               width: 250,
               child: QueryArtworkWidget(
-                id: audio[widget.index].id,
+                id: widget.allSongs[widget.index].id,
                 type: ArtworkType.AUDIO,
                 nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
               ),
             ),
             kHeight30,
             Text(
-              audio[widget.index].name!,
+              widget.allSongs[widget.index].name!,
               overflow: TextOverflow.fade,
               maxLines: 1,
               style: const TextStyle(fontSize: 20, color: textColor),
             ),
             Text(
-              audio[widget.index].artist == "<unknown>"
+              widget.allSongs[widget.index].artist == "<unknown>"
                   ? "Unknown Artist"
-                  : audio[widget.index].artist!,
+                  : widget.allSongs[widget.index].artist!,
               overflow: TextOverflow.fade,
               maxLines: 1,
               style: const TextStyle(fontSize: 15, color: authColor),
@@ -203,14 +212,11 @@ class _ScreenPlayState extends State<ScreenPlay> {
               IconButton(
                 onPressed: () async {
                   audioPlayer.loopMode == LoopMode.one
-                      ? await audioPlayer.setLoopMode(LoopMode.off)
+                      ? await audioPlayer.setLoopMode(LoopMode.all)
                       : await audioPlayer.setLoopMode(LoopMode.one);
-                  setState(() {});
                 },
-                icon: Icon(
-                  audioPlayer.loopMode == LoopMode.one
-                      ? Icons.repeat_one
-                      : Icons.repeat_outlined,
+                icon: const Icon(
+                  Icons.repeat_outlined,
                   color: themeColor,
                 ),
               ),
@@ -229,9 +235,9 @@ class _ScreenPlayState extends State<ScreenPlay> {
   reverse10sec() {
     return IconButton(
       onPressed: () {
-        var x = audioPlayer.position + const Duration(seconds: -10);
+        var x = audioPlayer.position + Duration(seconds: -10);
         if (x.isNegative) {
-          audioPlayer.seek(const Duration(seconds: 0));
+          audioPlayer.seek(Duration(seconds: 0));
         } else {
           audioPlayer.seek(x);
         }
@@ -247,9 +253,9 @@ class _ScreenPlayState extends State<ScreenPlay> {
   skip10sec() {
     return IconButton(
       onPressed: () {
-        var x = audioPlayer.position + const Duration(seconds: 10);
+        var x = audioPlayer.position + Duration(seconds: 10);
         if (x > dur!) {
-          audioPlayer.seek(dur! - const Duration(milliseconds: 250));
+          audioPlayer.seek(dur! - Duration(milliseconds: 250));
         } else {
           audioPlayer.seek(x);
         }
@@ -265,11 +271,13 @@ class _ScreenPlayState extends State<ScreenPlay> {
   IconButton favoriteButton() {
     return IconButton(
       onPressed: () {
-        favOption(audio[widget.index].id, context);
+        favOption(widget.allSongs[widget.index].id, context);
         setState(() {});
       },
       icon: Icon(
-        audio[widget.index].isFav ? Icons.favorite : Icons.favorite_outline,
+        widget.allSongs[widget.index].isFav
+            ? Icons.favorite
+            : Icons.favorite_outline,
         color: themeColor,
       ),
     );
@@ -278,7 +286,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
   IconButton previousSongButton() {
     return IconButton(
       onPressed: () async {
-        if (audioPlayer.hasPrevious && audioPlayer.loopMode != LoopMode.one) {
+        if (audioPlayer.hasPrevious) {
           audioPlayer.pause();
           audioPlayer.seekToPrevious();
           audioPlayer.play();
@@ -341,7 +349,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
   IconButton nextSongButton() {
     return IconButton(
       onPressed: () {
-        if (audioPlayer.hasNext && audioPlayer.loopMode != LoopMode.one) {
+        if (audioPlayer.hasNext) {
           widget.index += 1;
           audioPlayer.pause();
           audioPlayer.seekToNext();

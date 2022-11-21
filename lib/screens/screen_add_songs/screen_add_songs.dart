@@ -54,12 +54,25 @@ class _ScreenAddSongsState extends State<ScreenAddSongs> {
                             kWidth10,
                             IconButton(
                                 onPressed: () {
-                                  widget.playlist
-                                      .addData(value[index].id, context);
+                                  if (widget.playlist.songIds
+                                      .contains(value[index].id)) {
+                                    widget.playlist
+                                        .deleteData(value[index].id, context);
+                                  } else {
+                                    widget.playlist
+                                        .addData(value[index].id, context);
+                                  }
+                                  setState(() {});
                                 },
-                                icon: const Icon(
-                                  Icons.playlist_add,
-                                  color: textColor,
+                                icon: Icon(
+                                  widget.playlist.songIds
+                                          .contains(value[index].id)
+                                      ? Icons.playlist_add_check
+                                      : Icons.playlist_add,
+                                  color: widget.playlist.songIds
+                                          .contains(value[index].id)
+                                      ? Colors.green
+                                      : textColor,
                                   size: 30,
                                 ))
                           ],

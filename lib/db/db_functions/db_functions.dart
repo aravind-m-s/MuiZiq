@@ -59,25 +59,21 @@ addToRecent(int value) async {
   List<RecentModel> db = [];
   db.addAll(recentDB.values);
   if (recentDB.isNotEmpty) {
-    if (db[0].songIds != value) {
-      var ele =
-          recentDB.values.where((element) => element.songIds == value).toList();
-      if (ele.isEmpty) {
-        final val = RecentModel(songIds: value, count: 0);
-        recentDB.add(val);
-      } else {
-        final list = db.where((element) => element.songIds != value).toList();
-        int count = ele[0].count + 1;
+    var ele =
+        recentDB.values.where((element) => element.songIds == value).toList();
+    if (ele.isEmpty) {
+      final val = RecentModel(songIds: value, count: 0);
+      recentDB.add(val);
+    } else {
+      final list = db.where((element) => element.songIds != value).toList();
+      int count = ele[0].count + 1;
 
-        final val = RecentModel(songIds: value, count: count);
-        list.add(val);
+      final val = RecentModel(songIds: value, count: count);
+      list.add(val);
 
-        recentDB.deleteAll(recentDB.keys);
-        for (int i = 0; i < list.length; i++) {
-          recentDB.add(list[i]);
-        }
-      }
-    } else {}
+      recentDB.deleteAll(recentDB.keys);
+      recentDB.addAll(list);
+    }
   } else {
     final val = RecentModel(songIds: value, count: 0);
     recentDB.add(val);

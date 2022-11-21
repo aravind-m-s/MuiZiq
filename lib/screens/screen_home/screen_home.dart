@@ -119,7 +119,8 @@ class _ScreenHomeState extends State<ScreenHome> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 musicImage(),
-                                musicDetails(value, index),
+                                kWidth20,
+                                Expanded(child: musicDetails(value, index)),
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceAround,
