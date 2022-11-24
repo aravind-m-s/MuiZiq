@@ -4,8 +4,9 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="muiziq_app"
+        android:label="MuiZiq"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

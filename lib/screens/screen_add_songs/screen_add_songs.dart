@@ -38,6 +38,16 @@ class _ScreenAddSongsState extends State<ScreenAddSongs> {
         child: ValueListenableBuilder(
           valueListenable: musicNotifier,
           builder: (context, value, child) {
+            if (value.isEmpty) {
+              return const Center(
+                child: Text(
+                  'No Songs to add',
+                  style: TextStyle(
+                    color: textColor,
+                  ),
+                ),
+              );
+            }
             return ListView.separated(
                 itemBuilder: (context, index) {
                   return Padding(
