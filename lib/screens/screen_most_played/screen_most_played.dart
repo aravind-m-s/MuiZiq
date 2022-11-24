@@ -1,5 +1,6 @@
+// ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/adapters.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
@@ -120,7 +121,7 @@ class _ScreenMostPlayedState extends State<ScreenMostPlayed> {
                               ),
                             );
                           },
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.playlist_add,
                             size: 30,
                             color: textColor,

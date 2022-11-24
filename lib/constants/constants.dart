@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+
 import 'package:acr_cloud_sdk/acr_cloud_sdk.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +27,12 @@ const kHeight10 = SizedBox(height: 10);
 const kHeight20 = SizedBox(height: 20);
 const kHeight30 = SizedBox(height: 30);
 
-// Statics
+// Audio Constants
+
+var audio = musicNotifier.value;
+ValueNotifier<bool> isPlaying = ValueNotifier(false);
+
+// Playlist Setting
 
 AudioPlayer audioPlayer = AudioPlayer();
 ConcatenatingAudioSource createSongList(List<aq.SongModel> songs) {
@@ -45,12 +52,9 @@ ConcatenatingAudioSource createSongList(List<aq.SongModel> songs) {
   return ConcatenatingAudioSource(children: sources);
 }
 
-ValueNotifier<bool> isPlaying = ValueNotifier(false);
-ValueNotifier list = ValueNotifier([]);
-
-var audio = musicNotifier.value;
-
 // Audio Recognition
+
+ValueNotifier list = ValueNotifier([]);
 
 final AcrCloudSdk arc = AcrCloudSdk();
 

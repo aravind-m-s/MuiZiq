@@ -1,4 +1,4 @@
-// ignore_for_file: must_be_immutable
+// ignore_for_file: must_be_immutable, invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
@@ -7,6 +7,7 @@ import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ScreenPlay extends StatefulWidget {
   int index;
@@ -21,6 +22,7 @@ class ScreenPlay extends StatefulWidget {
 }
 
 class _ScreenPlayState extends State<ScreenPlay> {
+  // ignore: prefer_const_constructors
   Duration? dur = Duration();
   bool _isPlaying = false;
 
@@ -44,6 +46,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
     });
     audioPlayer.positionStream.listen((event) {
       if (event == dur &&
+          // ignore: prefer_const_constructors
           dur != Duration() &&
           audioPlayer.loopMode != LoopMode.one) {
         if (audioPlayer.hasNext) {
@@ -69,8 +72,16 @@ class _ScreenPlayState extends State<ScreenPlay> {
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
-    final List<SongModel> song =
-        songs.where((element) => element.album != 'WhatsApp Audio').toList();
+
+    List<SongModel> song = [];
+    final prefs = await SharedPreferences.getInstance();
+    final bool? filter = prefs.getBool('filter');
+    if (filter == true) {
+      song =
+          songs.where((element) => element.album != 'WhatsApp Audio').toList();
+    } else {
+      song = songs;
+    }
     widget.songs = song;
   }
 

@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:just_audio/just_audio.dart';
@@ -163,19 +165,19 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
           backgroundColor: bgPrimary,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(
+          title: const Text(
             'Are You Sure!!!',
             style: TextStyle(color: Colors.red),
           ),
           content: Text(
             'Do you want to delete the playlist $playlist',
-            style: TextStyle(color: textColor),
+            style: const TextStyle(color: textColor),
           ),
           actions: [
             SizedBox(
               width: 140,
               child: ElevatedButton(
-                child: Text('Cancel'),
+                child: const Text('Cancel'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -185,7 +187,7 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
               width: 140,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: Text('Delete'),
+                child: const Text('Delete'),
                 onPressed: () {
                   deletePlaylist(index, context);
                   setState(() {});

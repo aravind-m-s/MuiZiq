@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/screens/widgets/bottom_nav.dart';
 import 'package:muiziq_app/screens/widgets/logo.dart';
 
@@ -25,7 +23,7 @@ class _ScreenSplashState extends State<ScreenSplash> {
         child: Center(
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Image(image: AssetImage('lib/assets/background.png')),
+          const Image(image: AssetImage('lib/assets/background.png')),
           const SizedBox(height: 30),
           logoText(),
           const SizedBox(height: 30),

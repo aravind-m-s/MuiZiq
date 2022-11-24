@@ -1,7 +1,8 @@
+// ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+
 import 'package:hive_flutter/adapters.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
@@ -145,8 +146,8 @@ class _ScreenHomeState extends State<ScreenHome> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (ctx) => ScreenFindSong()));
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (ctx) => const ScreenFindSong()));
         },
         backgroundColor: themeColor,
         child: const Icon(Icons.mic),
@@ -231,7 +232,7 @@ class _ScreenHomeState extends State<ScreenHome> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          audioName(value[index].name!),
+          audioName(value[index].title),
           style: const TextStyle(fontSize: 15, color: textColor),
         ),
         Text(

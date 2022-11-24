@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
@@ -7,10 +5,7 @@ import 'package:muiziq_app/db/db_model/music_model.dart';
 import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart'
     as pd;
 import 'package:muiziq_app/screens/screen_add_songs/screen_add_songs.dart';
-import 'package:muiziq_app/screens/screen_play/screen_play.dart';
-import 'package:muiziq_app/screens/screen_playlist/screen_playlist.dart';
 import 'package:muiziq_app/screens/screen_playlist_play/screen_playlist_play.dart';
-import 'package:on_audio_query/on_audio_query.dart';
 
 List<MusicModel> allPlaylistSongs = [];
 
@@ -208,7 +203,7 @@ class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
                 children: [
                   Visibility(
                       visible: _visible,
-                      child: Text(
+                      child: const Text(
                         'Cannot be empty',
                         style: TextStyle(color: Colors.red),
                       )),

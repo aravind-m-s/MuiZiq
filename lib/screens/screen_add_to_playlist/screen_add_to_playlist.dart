@@ -1,10 +1,11 @@
+// ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart';
 import 'package:muiziq_app/screens/widgets/screen_title.dart';
-import 'package:muiziq_app/screens/widgets/snacbar.dart';
 
 bool isVisible = false;
 

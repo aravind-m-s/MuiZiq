@@ -1,9 +1,10 @@
-// ignore_for_file: must_be_immutable
+// ignore_for_file: must_be_immutable, invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
+import 'package:muiziq_app/db/db_model/music_model.dart';
 import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart'
     as pd;
 import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist.dart';
@@ -13,7 +14,7 @@ import 'package:rxdart/rxdart.dart';
 class ScreenPlaylistPlay extends StatefulWidget {
   int index;
   final pd.PlaylistModel playlistData;
-  final allSongs;
+  final List<MusicModel> allSongs;
   ScreenPlaylistPlay(
       {super.key,
       required this.index,
@@ -27,6 +28,7 @@ class ScreenPlaylistPlay extends StatefulWidget {
 class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
   List<SongModel> playlistSongs = [];
 
+  // ignore: prefer_const_constructors
   Duration? dur = Duration();
   bool _isPlaying = false;
 
@@ -49,7 +51,7 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
       dur = event;
     });
     audioPlayer.positionStream.listen((event) {
-      if (event == dur && dur != Duration()) {
+      if (event == dur && dur != const Duration()) {
         if (audioPlayer.hasNext) {
           widget.index += 1;
           audioPlayer.pause();
@@ -235,9 +237,9 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
   reverse10sec() {
     return IconButton(
       onPressed: () {
-        var x = audioPlayer.position + Duration(seconds: -10);
+        var x = audioPlayer.position + const Duration(seconds: -10);
         if (x.isNegative) {
-          audioPlayer.seek(Duration(seconds: 0));
+          audioPlayer.seek(const Duration(seconds: 0));
         } else {
           audioPlayer.seek(x);
         }
@@ -253,9 +255,9 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
   skip10sec() {
     return IconButton(
       onPressed: () {
-        var x = audioPlayer.position + Duration(seconds: 10);
+        var x = audioPlayer.position + const Duration(seconds: 10);
         if (x > dur!) {
-          audioPlayer.seek(dur! - Duration(milliseconds: 250));
+          audioPlayer.seek(dur! - const Duration(milliseconds: 250));
         } else {
           audioPlayer.seek(x);
         }

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
@@ -97,9 +95,9 @@ class _ScreenSettingsState extends State<ScreenSettings> {
       onTap: () {},
       child: Row(
         children: [
-          Icon(Icons.whatsapp, color: textColor),
+          const Icon(Icons.whatsapp, color: textColor),
           kWidth10,
-          Text(
+          const Text(
             'Filter Whatsapp Audios',
             style: TextStyle(color: textColor, fontSize: 18),
           ),
