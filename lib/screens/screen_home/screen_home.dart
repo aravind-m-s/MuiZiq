@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
+import 'package:muiziq_app/screens/find_song/find_song.dart';
 import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist.dart';
 import 'package:muiziq_app/screens/screen_play/screen_play.dart';
 import 'package:muiziq_app/screens/screen_settings/screen_settings.dart';
@@ -141,6 +142,14 @@ class _ScreenHomeState extends State<ScreenHome> {
             )
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (ctx) => ScreenFindSong()));
+        },
+        backgroundColor: themeColor,
+        child: const Icon(Icons.mic),
       ),
     );
   }

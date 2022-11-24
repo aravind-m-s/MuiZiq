@@ -88,8 +88,8 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
                                       right: 0,
                                       child: IconButton(
                                         onPressed: () {
-                                          deletePlaylist(index, context);
-                                          setState(() {});
+                                          deletePlaylistDialog(
+                                              value[index].name, index);
                                         },
                                         icon: const Icon(
                                           Icons.delete,
@@ -152,6 +152,51 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
           ),
         ),
       ),
+    );
+  }
+
+  deletePlaylistDialog(playlist, index) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: bgPrimary,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            'Are You Sure!!!',
+            style: TextStyle(color: Colors.red),
+          ),
+          content: Text(
+            'Do you want to delete the playlist $playlist',
+            style: TextStyle(color: textColor),
+          ),
+          actions: [
+            SizedBox(
+              width: 140,
+              child: ElevatedButton(
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+            SizedBox(
+              width: 140,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: Text('Delete'),
+                onPressed: () {
+                  deletePlaylist(index, context);
+                  setState(() {});
+
+                  Navigator.of(context).pop();
+                },
+              ),
+            )
+          ],
+        );
+      },
     );
   }
 

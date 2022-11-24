@@ -25,6 +25,7 @@ class ScreenPlaylistView extends StatefulWidget {
 }
 
 class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
+  bool _visible = false;
   TextEditingController controller = TextEditingController();
 
   @override
@@ -201,18 +202,32 @@ class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
                 style: TextStyle(color: themeColor),
               ),
             ),
-            content: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                label: const Text(
-                  'Playlist Name',
-                  style: TextStyle(color: textColor),
-                ),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide(color: themeColor)),
+            content: SizedBox(
+              height: 90,
+              child: Column(
+                children: [
+                  Visibility(
+                      visible: _visible,
+                      child: Text(
+                        'Cannot be empty',
+                        style: TextStyle(color: Colors.red),
+                      )),
+                  kHeight10,
+                  TextField(
+                    controller: controller,
+                    decoration: InputDecoration(
+                      label: const Text(
+                        'Playlist Name',
+                        style: TextStyle(color: textColor),
+                      ),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: const BorderSide(color: themeColor)),
+                    ),
+                    style: const TextStyle(color: textColor),
+                  ),
+                ],
               ),
-              style: const TextStyle(color: textColor),
             ),
             actions: [
               SizedBox(
@@ -238,9 +253,16 @@ class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
                   ),
                   child: const Text('Ok'),
                   onPressed: () {
-                    updatePlaylist(widget.index, controller.text, context);
-                    Navigator.of(context).pop();
-                    setState(() {});
+                    if (controller.text.isEmpty) {
+                      _visible = true;
+                      Navigator.of(context).pop();
+                      editPlaylistDialog();
+                    } else {
+                      _visible = false;
+                      updatePlaylist(widget.index, controller.text, context);
+                      Navigator.of(context).pop();
+                      setState(() {});
+                    }
                   },
                 ),
               )

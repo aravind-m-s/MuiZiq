@@ -86,6 +86,9 @@ class _ScreenMainState extends State<ScreenMain> {
   }
 
   Positioned miniPlayer(BuildContext context) {
+    audioPlayer.playerStateStream.listen((event) {
+      setState(() {});
+    });
     int audioIndex = audioPlayer.currentIndex!;
     return Positioned(
       bottom: 0,
@@ -103,7 +106,7 @@ class _ScreenMainState extends State<ScreenMain> {
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
                   image: const DecorationImage(
-                      image: AssetImage('lib/assets/default.jpg'))),
+                      image: AssetImage('lib/assets/MuiZiq.png'))),
             ),
             // kWidth20,
             SizedBox(
@@ -129,12 +132,10 @@ class _ScreenMainState extends State<ScreenMain> {
                 IconButton(
                   onPressed: () {
                     if (audioPlayer.hasPrevious) {
+                      audioPlayer.pause();
                       audioPlayer.seekToPrevious();
                       audioPlayer.play();
-                    } else {
-                      audioPlayer.play();
                     }
-
                     setState(() {});
                   },
                   icon: Icon(
@@ -165,9 +166,8 @@ class _ScreenMainState extends State<ScreenMain> {
                 IconButton(
                   onPressed: () {
                     if (audioPlayer.hasNext) {
+                      audioPlayer.pause();
                       audioPlayer.seekToNext();
-                      audioPlayer.play();
-                    } else {
                       audioPlayer.play();
                     }
                     setState(() {});

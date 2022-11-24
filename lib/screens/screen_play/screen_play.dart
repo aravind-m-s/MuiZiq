@@ -69,7 +69,9 @@ class _ScreenPlayState extends State<ScreenPlay> {
       uriType: UriType.EXTERNAL,
       ignoreCase: true,
     );
-    widget.songs = songs;
+    final List<SongModel> song =
+        songs.where((element) => element.album != 'WhatsApp Audio').toList();
+    widget.songs = song;
   }
 
   @override
@@ -81,6 +83,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: appBarWidget(context),
       body: Column(
         children: [
@@ -289,7 +292,6 @@ class _ScreenPlayState extends State<ScreenPlay> {
             musicDetails();
           });
         } else {
-          audioPlayer.play;
           _isPlaying = true;
         }
       },
@@ -350,7 +352,6 @@ class _ScreenPlayState extends State<ScreenPlay> {
           setState(() {});
         } else {
           _isPlaying = true;
-          audioPlayer.play();
         }
       },
       icon: Icon(

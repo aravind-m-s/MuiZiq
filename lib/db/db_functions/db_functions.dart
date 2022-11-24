@@ -4,15 +4,29 @@ import 'package:muiziq_app/db/db_model/music_model.dart';
 import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart';
 import 'package:muiziq_app/db/db_model/recent_model/recent_model.dart';
 import 'package:muiziq_app/screens/widgets/snacbar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 ValueNotifier<List<MusicModel>> musicNotifier = ValueNotifier([]);
 ValueNotifier<List<PlaylistModel>> playlistNotifier = ValueNotifier([]);
 ValueNotifier<List<RecentModel>> recentNotifier = ValueNotifier([]);
 
 getAllMusic() async {
+  bool filter = false;
   final musicDb = await Hive.openBox<MusicModel>('musics');
+  final prefs = await SharedPreferences.getInstance();
   musicNotifier.value.clear();
-  musicNotifier.value.addAll(musicDb.values);
+  if (prefs.getBool('filter') != null) {
+    filter = prefs.getBool('filter')!;
+  }
+  List<MusicModel> db = [];
+  db.addAll(musicDb.values);
+  if (filter) {
+    final temp =
+        db.where((element) => element.album != "WhatsApp Audio").toList();
+    musicNotifier.value.addAll(temp);
+  } else {
+    musicNotifier.value.addAll(musicDb.values);
+  }
   musicNotifier.notifyListeners();
 }
 

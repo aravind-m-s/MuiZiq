@@ -2,6 +2,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:muiziq_app/constants/constants.dart';
+import 'package:muiziq_app/db/db_functions/db_functions.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 bool val = false;
@@ -14,6 +16,23 @@ class ScreenSettings extends StatefulWidget {
 }
 
 class _ScreenSettingsState extends State<ScreenSettings> {
+  getval() async {
+    final prefs = await SharedPreferences.getInstance();
+    final bool? temp = prefs.getBool('filter');
+    if (temp == null) {
+      val = false;
+    } else {
+      val = prefs.getBool('filter')!;
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    getval();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,10 +106,13 @@ class _ScreenSettingsState extends State<ScreenSettings> {
           kWidth20,
           Switch(
             value: val,
-            onChanged: (value) {
+            onChanged: (value) async {
               setState(() {
                 val = value;
               });
+              final prefs = await SharedPreferences.getInstance();
+              prefs.setBool('filter', value);
+              getAllMusic();
             },
             activeColor: themeColor,
             inactiveThumbColor: themeColor,

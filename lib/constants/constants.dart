@@ -1,8 +1,9 @@
+import 'package:acr_cloud_sdk/acr_cloud_sdk.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:on_audio_query/on_audio_query.dart' as aq;
 
 // Colors
 
@@ -27,7 +28,7 @@ const kHeight30 = SizedBox(height: 30);
 // Statics
 
 AudioPlayer audioPlayer = AudioPlayer();
-ConcatenatingAudioSource createSongList(List<SongModel> songs) {
+ConcatenatingAudioSource createSongList(List<aq.SongModel> songs) {
   List<AudioSource> sources = [];
   for (var song in songs) {
     sources.add(AudioSource.uri(
@@ -36,12 +37,40 @@ ConcatenatingAudioSource createSongList(List<SongModel> songs) {
           id: song.id.toString(),
           title: song.title,
           album: song.album,
-          artist: song.artist),
+          artist: song.artist,
+          artUri: Uri.parse(
+              "https://imgs.search.brave.com/FWuCxRUj1_kcCS3ZihwnVhbcD9dKD7qM4zLd0iZmrzU/rs:fit:844:225:1/g:ce/aHR0cHM6Ly90c2U0/Lm1tLmJpbmcubmV0/L3RoP2lkPU9JUC5H/ay1odTMxdVh3Um1N/ZW40LVNsbWtRSGFF/SyZwaWQ9QXBp")),
     ));
   }
   return ConcatenatingAudioSource(children: sources);
 }
 
 ValueNotifier<bool> isPlaying = ValueNotifier(false);
+ValueNotifier list = ValueNotifier([]);
 
 var audio = musicNotifier.value;
+
+// Audio Recognition
+
+final AcrCloudSdk arc = AcrCloudSdk();
+
+initArc() {
+  arc
+    ..init(
+      host: 'identify-ap-southeast-1.acrcloud.com',
+      accessKey: '8db103397174cae22221f699329d467d',
+      accessSecret: 'IBSCZmce2Ap82vgOyLPUWDol7n2e6NULFWUrmFqk',
+      setLog: false,
+    )
+    ..songModelStream.listen(searchSong);
+}
+
+void searchSong(SongModel song) async {
+  try {
+    list.value.add(song.metadata!.music![0]);
+
+    list.notifyListeners();
+  } catch (e) {
+    list.value = null;
+  }
+}

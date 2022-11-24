@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
 import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart';
@@ -18,7 +19,11 @@ void main() async {
   if (!Hive.isAdapterRegistered(RecentModelAdapter().typeId)) {
     Hive.registerAdapter(RecentModelAdapter());
   }
-
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
+    androidNotificationChannelName: 'Audio playback',
+    androidNotificationOngoing: true,
+  );
   runApp(const MyApp());
 }
 
