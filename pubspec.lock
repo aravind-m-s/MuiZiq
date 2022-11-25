@@ -63,7 +63,7 @@ packages:
       name: audio_session
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.10"
+    version: "0.1.11"
   audio_video_progress_bar:
     dependency: "direct main"
     description:
@@ -281,7 +281,7 @@ packages:
       name: frontend_server_client
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.1.0"
+    version: "3.2.0"
   glob:
     dependency: transitive
     description:
@@ -491,7 +491,7 @@ packages:
       name: path_provider_android
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.21"
+    version: "2.0.22"
   path_provider_ios:
     dependency: transitive
     description:
@@ -797,14 +797,14 @@ packages:
       name: url_launcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.1.6"
+    version: "6.1.7"
   url_launcher_android:
     dependency: transitive
     description:
       name: url_launcher_android
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.0.21"
+    version: "6.0.22"
   url_launcher_ios:
     dependency: transitive
     description:

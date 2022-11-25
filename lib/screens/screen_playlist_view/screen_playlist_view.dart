@@ -127,7 +127,7 @@ class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                allPlaylistSongs[index].name!,
+                                allPlaylistSongs[index].title!,
                                 style: const TextStyle(
                                     fontSize: 15, color: textColor),
                               ),

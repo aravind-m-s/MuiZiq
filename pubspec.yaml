@@ -38,7 +38,6 @@ dependencies:
   cupertino_icons: ^1.0.2
   font_awesome_flutter: ^10.2.1
   on_audio_query: ^2.6.1
-  permission_handler: ^9.2.0
   just_audio: ^0.9.30
   hive: ^2.2.3
   hive_flutter: ^1.1.0
@@ -52,6 +51,7 @@ dependencies:
   dio: ^4.0.6
   shared_preferences: ^2.0.15
   just_audio_background: ^0.0.1-beta.8
+  permission_handler: ^9.2.0
 
 dev_dependencies:
   flutter_test:

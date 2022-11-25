@@ -55,6 +55,8 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                   kHeight10,
                   const Divider(color: themeColor),
                   whatsappFilter(),
+                  kHeight20,
+                  resetApp(),
                 ],
               ),
             ),
@@ -66,6 +68,18 @@ class _ScreenSettingsState extends State<ScreenSettings> {
           ],
         ),
       ),
+    );
+  }
+
+  resetApp() {
+    return ElevatedButton(
+      onPressed: () {
+        resetAppAlertDialog();
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.red,
+      ),
+      child: const Text('Reset App'),
     );
   }
 
@@ -139,9 +153,31 @@ class _ScreenSettingsState extends State<ScreenSettings> {
     );
   }
 
-  privacyPolicy() {
+  share() {
     return InkWell(
       onTap: () {},
+      child: Row(
+        children: const [
+          Icon(
+            Icons.filter_none,
+            color: textColor,
+          ),
+          kWidth10,
+          Text(
+            'Share the app',
+            style: TextStyle(color: textColor, fontSize: 18),
+          ),
+        ],
+      ),
+    );
+  }
+
+  privacyPolicy() {
+    return InkWell(
+      onTap: () {
+        launchUrlString(
+            'https://docs.google.com/document/d/1Dk_yRZfG9Rcf66sI_tIpBs2qle5dm0NcwiC2nXC9oQE/edit?usp=sharing');
+      },
       child: Row(
         children: const [
           Icon(
@@ -155,6 +191,56 @@ class _ScreenSettingsState extends State<ScreenSettings> {
           ),
         ],
       ),
+    );
+  }
+
+  resetAppAlertDialog() {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: bgPrimary,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Center(
+            child: Text(
+              'Are you sure!!',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+          content: const SizedBox(
+            height: 65,
+            child: Center(
+              child: Text(
+                'Resetting the app will remove all your playlist and favorite songs.',
+                style: TextStyle(color: textColor),
+              ),
+            ),
+          ),
+          actions: [
+            SizedBox(
+              width: 140,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                child: const Text('Cancel'),
+              ),
+            ),
+            SizedBox(
+              width: 140,
+              child: ElevatedButton(
+                onPressed: () {
+                  resetApplication(context);
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Reset App'),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

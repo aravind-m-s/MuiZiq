@@ -164,7 +164,7 @@ class _ScreenSearchState extends State<ScreenSearch> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            foundList[index].name!,
+            foundList[index].title!,
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
             style: const TextStyle(fontSize: 15, color: textColor),

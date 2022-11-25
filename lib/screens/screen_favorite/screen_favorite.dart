@@ -125,7 +125,7 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            value[index].name!,
+            value[index].title!,
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
             style: const TextStyle(fontSize: 15, color: textColor),

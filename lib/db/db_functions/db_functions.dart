@@ -5,6 +5,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
 import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart';
 import 'package:muiziq_app/db/db_model/recent_model/recent_model.dart';
+import 'package:muiziq_app/screens/screen_splash/screen_splash.dart';
 import 'package:muiziq_app/screens/widgets/snacbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -102,4 +103,21 @@ addAllRecent() async {
   recentNotifier.value.addAll(recentDB.values);
   recentNotifier.notifyListeners();
   recentDB.close();
+}
+
+resetApplication(context) async {
+  final musicDb = await Hive.openBox<MusicModel>('musics');
+  final recentDB = await Hive.openBox<RecentModel>('recent');
+  final playlistDB = await Hive.openBox<PlaylistModel>('playlists');
+  musicDb.deleteAll(musicDb.keys);
+  recentDB.deleteAll(recentDB.keys);
+  playlistDB.deleteAll(playlistDB.keys);
+  final prefs = await SharedPreferences.getInstance();
+  prefs.setBool('filter', false);
+  getAllMusic();
+  Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => const ScreenSplash(),
+      ),
+      (route) => false);
 }

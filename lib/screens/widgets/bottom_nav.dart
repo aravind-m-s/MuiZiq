@@ -3,6 +3,7 @@ import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/screens/screen_favorite/screen_favorite.dart';
 import 'package:muiziq_app/screens/screen_home/screen_home.dart';
+import 'package:muiziq_app/screens/screen_play/screen_play.dart';
 import 'package:muiziq_app/screens/screen_playlist/screen_playlist.dart';
 import 'package:muiziq_app/screens/screen_search/screen_search.dart';
 
@@ -92,97 +93,104 @@ class _ScreenMainState extends State<ScreenMain> {
     int audioIndex = audioPlayer.currentIndex!;
     return Positioned(
       bottom: 0,
-      child: Container(
-        color: bottomNavColor,
-        height: 75,
-        width: MediaQuery.of(context).size.width,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            // kWidth30,
-            Container(
-              height: 60,
-              width: 60,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  image: const DecorationImage(
-                      image: AssetImage('lib/assets/MuiZiq.png'))),
-            ),
-            // kWidth20,
-            SizedBox(
-              width: 130,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (ctx) => ScreenPlay(index: audioPlayer.currentIndex!),
+          ));
+        },
+        child: Container(
+          color: bottomNavColor,
+          height: 75,
+          width: MediaQuery.of(context).size.width,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // kWidth30,
+              Container(
+                height: 60,
+                width: 60,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    image: const DecorationImage(
+                        image: AssetImage('lib/assets/MuiZiq.png'))),
+              ),
+              // kWidth20,
+              SizedBox(
+                width: 130,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      musicNotifier.value[audioIndex].title!,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: textColor, fontSize: 18),
+                    ),
+                    Text(
+                      musicNotifier.value[audioIndex].artist!,
+                      style: const TextStyle(color: themeColor, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              // kWidth20,
+              Row(
                 children: [
-                  Text(
-                    musicNotifier.value[audioIndex].name!,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: textColor, fontSize: 18),
+                  IconButton(
+                    onPressed: () {
+                      if (audioPlayer.hasPrevious) {
+                        audioPlayer.pause();
+                        audioPlayer.seekToPrevious();
+                        audioPlayer.play();
+                      }
+                      setState(() {});
+                    },
+                    icon: Icon(
+                      Icons.skip_previous,
+                      color: audioPlayer.hasPrevious
+                          ? textColor
+                          : Colors.grey.withOpacity(0.5),
+                      size: 25,
+                    ),
                   ),
-                  Text(
-                    musicNotifier.value[audioIndex].artist!,
-                    style: const TextStyle(color: themeColor, fontSize: 11),
+                  CircleAvatar(
+                    radius: 23,
+                    backgroundColor: themeColor,
+                    child: IconButton(
+                        onPressed: () {
+                          if (audioPlayer.playing) {
+                            audioPlayer.pause();
+                          } else {
+                            audioPlayer.play();
+                          }
+                          setState(() {});
+                        },
+                        icon: Icon(
+                          audioPlayer.playing ? Icons.pause : Icons.play_arrow,
+                          color: textColor,
+                        )),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      if (audioPlayer.hasNext) {
+                        audioPlayer.pause();
+                        audioPlayer.seekToNext();
+                        audioPlayer.play();
+                      }
+                      setState(() {});
+                    },
+                    icon: Icon(
+                      Icons.skip_next,
+                      color: audioPlayer.hasNext
+                          ? textColor
+                          : Colors.grey.withOpacity(0.5),
+                      size: 25,
+                    ),
                   ),
                 ],
-              ),
-            ),
-            // kWidth20,
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    if (audioPlayer.hasPrevious) {
-                      audioPlayer.pause();
-                      audioPlayer.seekToPrevious();
-                      audioPlayer.play();
-                    }
-                    setState(() {});
-                  },
-                  icon: Icon(
-                    Icons.skip_previous,
-                    color: audioPlayer.hasPrevious
-                        ? textColor
-                        : Colors.grey.withOpacity(0.5),
-                    size: 25,
-                  ),
-                ),
-                CircleAvatar(
-                  radius: 23,
-                  backgroundColor: themeColor,
-                  child: IconButton(
-                      onPressed: () {
-                        if (audioPlayer.playing) {
-                          audioPlayer.pause();
-                        } else {
-                          audioPlayer.play();
-                        }
-                        setState(() {});
-                      },
-                      icon: Icon(
-                        audioPlayer.playing ? Icons.pause : Icons.play_arrow,
-                        color: textColor,
-                      )),
-                ),
-                IconButton(
-                  onPressed: () {
-                    if (audioPlayer.hasNext) {
-                      audioPlayer.pause();
-                      audioPlayer.seekToNext();
-                      audioPlayer.play();
-                    }
-                    setState(() {});
-                  },
-                  icon: Icon(
-                    Icons.skip_next,
-                    color: audioPlayer.hasNext
-                        ? textColor
-                        : Colors.grey.withOpacity(0.5),
-                    size: 25,
-                  ),
-                ),
-              ],
-            )
-          ],
+              )
+            ],
+          ),
         ),
       ),
     );

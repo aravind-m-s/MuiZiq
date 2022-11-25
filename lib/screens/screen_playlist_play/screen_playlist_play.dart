@@ -50,14 +50,15 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
     audioPlayer.durationStream.listen((event) {
       dur = event;
     });
-    audioPlayer.positionStream.listen((event) {
-      if (event == dur && dur != const Duration()) {
+    audioPlayer.positionStream.listen((event) async {
+      // ignore: prefer_const_constructors
+      if (event == dur && dur != Duration()) {
         if (audioPlayer.hasNext) {
           widget.index += 1;
           audioPlayer.pause();
           audioPlayer.seekToNext();
           _isPlaying = true;
-          audioPlayer.play();
+          await audioPlayer.play();
           setState(() {});
         } else {
           _isPlaying = true;
@@ -116,7 +117,7 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.allSongs[widget.index].name!,
+            widget.allSongs[widget.index].title!,
             overflow: TextOverflow.fade,
             maxLines: 1,
             style: const TextStyle(fontSize: 15, color: textColor),
@@ -171,7 +172,7 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
             ),
             kHeight30,
             Text(
-              widget.allSongs[widget.index].name!,
+              widget.allSongs[widget.index].title!,
               overflow: TextOverflow.fade,
               maxLines: 1,
               style: const TextStyle(fontSize: 20, color: textColor),
@@ -237,9 +238,11 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
   reverse10sec() {
     return IconButton(
       onPressed: () {
-        var x = audioPlayer.position + const Duration(seconds: -10);
+        // ignore: prefer_const_constructors
+        var x = audioPlayer.position + Duration(seconds: -10);
         if (x.isNegative) {
-          audioPlayer.seek(const Duration(seconds: 0));
+          // ignore: prefer_const_constructors
+          audioPlayer.seek(Duration(seconds: 0));
         } else {
           audioPlayer.seek(x);
         }
@@ -255,9 +258,11 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
   skip10sec() {
     return IconButton(
       onPressed: () {
-        var x = audioPlayer.position + const Duration(seconds: 10);
+        // ignore: prefer_const_constructors
+        var x = audioPlayer.position + Duration(seconds: 10);
         if (x > dur!) {
-          audioPlayer.seek(dur! - const Duration(milliseconds: 250));
+          // ignore: prefer_const_constructors
+          audioPlayer.seek(dur! - Duration(milliseconds: 250));
         } else {
           audioPlayer.seek(x);
         }
@@ -290,7 +295,7 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
       onPressed: () async {
         if (audioPlayer.hasPrevious) {
           audioPlayer.pause();
-          audioPlayer.seekToPrevious();
+          await audioPlayer.seekToPrevious();
           audioPlayer.play();
           widget.index -= 1;
           _isPlaying = true;
@@ -350,11 +355,11 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
 
   IconButton nextSongButton() {
     return IconButton(
-      onPressed: () {
+      onPressed: () async {
         if (audioPlayer.hasNext) {
           widget.index += 1;
           audioPlayer.pause();
-          audioPlayer.seekToNext();
+          await audioPlayer.seekToNext();
           _isPlaying = true;
           audioPlayer.play();
           setState(() {});

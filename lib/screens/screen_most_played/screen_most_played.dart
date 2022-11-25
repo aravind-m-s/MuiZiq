@@ -86,7 +86,7 @@ class _ScreenMostPlayedState extends State<ScreenMostPlayed> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              value[index].name!,
+                              value[index].title!,
                               style: const TextStyle(
                                   fontSize: 15, color: textColor),
                             ),

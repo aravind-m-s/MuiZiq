@@ -44,7 +44,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
     audioPlayer.durationStream.listen((event) {
       dur = event;
     });
-    audioPlayer.positionStream.listen((event) {
+    audioPlayer.positionStream.listen((event) async {
       if (event == dur &&
           // ignore: prefer_const_constructors
           dur != Duration() &&
@@ -52,7 +52,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
         if (audioPlayer.hasNext) {
           widget.index += 1;
           audioPlayer.pause();
-          audioPlayer.seekToNext();
+          await audioPlayer.seekToNext();
           _isPlaying = true;
           audioPlayer.play();
           setState(() {});
@@ -119,7 +119,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            audio[widget.index].name!,
+            audio[widget.index].title!,
             overflow: TextOverflow.fade,
             maxLines: 1,
             style: const TextStyle(fontSize: 15, color: textColor),
@@ -174,7 +174,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
             ),
             kHeight30,
             Text(
-              audio[widget.index].name!,
+              audio[widget.index].title!,
               overflow: TextOverflow.fade,
               maxLines: 1,
               style: const TextStyle(fontSize: 20, color: textColor),
@@ -243,9 +243,11 @@ class _ScreenPlayState extends State<ScreenPlay> {
   reverse10sec() {
     return IconButton(
       onPressed: () {
-        var x = audioPlayer.position + const Duration(seconds: -10);
+        // ignore: prefer_const_constructors
+        var x = audioPlayer.position + Duration(seconds: -10);
         if (x.isNegative) {
-          audioPlayer.seek(const Duration(seconds: 0));
+          // ignore: prefer_const_constructors
+          audioPlayer.seek(Duration(seconds: 0));
         } else {
           audioPlayer.seek(x);
         }
@@ -261,9 +263,11 @@ class _ScreenPlayState extends State<ScreenPlay> {
   skip10sec() {
     return IconButton(
       onPressed: () {
-        var x = audioPlayer.position + const Duration(seconds: 10);
+        // ignore: prefer_const_constructors
+        var x = audioPlayer.position + Duration(seconds: 10);
         if (x > dur!) {
-          audioPlayer.seek(dur! - const Duration(milliseconds: 250));
+          // ignore: prefer_const_constructors
+          audioPlayer.seek(dur! - Duration(milliseconds: 250));
         } else {
           audioPlayer.seek(x);
         }
@@ -294,7 +298,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
       onPressed: () async {
         if (audioPlayer.hasPrevious && audioPlayer.loopMode != LoopMode.one) {
           audioPlayer.pause();
-          audioPlayer.seekToPrevious();
+          await audioPlayer.seekToPrevious();
           audioPlayer.play();
           widget.index -= 1;
           _isPlaying = true;
@@ -353,13 +357,14 @@ class _ScreenPlayState extends State<ScreenPlay> {
 
   IconButton nextSongButton() {
     return IconButton(
-      onPressed: () {
+      onPressed: () async {
         if (audioPlayer.hasNext && audioPlayer.loopMode != LoopMode.one) {
           widget.index += 1;
           audioPlayer.pause();
-          audioPlayer.seekToNext();
-          _isPlaying = true;
+          await audioPlayer.seekToNext();
           audioPlayer.play();
+          _isPlaying = true;
+
           setState(() {});
         } else {
           _isPlaying = true;
