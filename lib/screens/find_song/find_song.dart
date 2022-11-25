@@ -149,8 +149,11 @@ class _ScreenFindSongState extends State<ScreenFindSong> {
                       children: [
                         SizedBox(
                           height: 50,
-                          child: ElevatedButton(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.search),
                             style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25)),
                               backgroundColor: Colors.red,
                             ),
                             onPressed: () {
@@ -167,15 +170,19 @@ class _ScreenFindSongState extends State<ScreenFindSong> {
                                   'https://m.youtube.com/results?sp=mAEA&search_query=$title+by+$artist';
                               launchUrlString(query);
                             },
-                            child: const Text("Youtube"),
+                            label: const Text("Youtube"),
                           ),
                         ),
                         kWidth30,
                         SizedBox(
                           height: 50,
-                          child: ElevatedButton(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.search),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
                             ),
                             onPressed: () {
                               String title = value[0].title.trim();
@@ -191,7 +198,7 @@ class _ScreenFindSongState extends State<ScreenFindSong> {
                                   'https://open.spotify.com/search/results/$title%20by%20$artist';
                               launchUrlString(query);
                             },
-                            child: const Text("Spotify"),
+                            label: const Text("Spotify"),
                           ),
                         ),
                       ],

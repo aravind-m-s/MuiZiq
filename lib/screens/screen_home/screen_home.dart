@@ -1,5 +1,7 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
 
+import 'dart:io';
+
 import 'package:hive_flutter/adapters.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
@@ -146,8 +148,39 @@ class _ScreenHomeState extends State<ScreenHome> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (ctx) => const ScreenFindSong()));
+          try {
+            final result = await InternetAddress.lookup('example.com');
+            if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+              // ignore: use_build_context_synchronously
+              Navigator.of(context).push(
+                  MaterialPageRoute(builder: (ctx) => const ScreenFindSong()));
+            }
+          } on SocketException catch (_) {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  backgroundColor: bgPrimary,
+                  title: const Center(
+                      child: Text(
+                    'No Internet',
+                    style: TextStyle(color: Colors.red),
+                  )),
+                  content: const Text(
+                    'Please chck your internet connection',
+                    style: TextStyle(color: textColor),
+                  ),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('OK'))
+                  ],
+                );
+              },
+            );
+          }
         },
         backgroundColor: themeColor,
         child: const Icon(Icons.mic),
