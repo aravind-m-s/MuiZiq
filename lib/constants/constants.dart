@@ -1,7 +1,10 @@
 // ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
+import 'dart:developer';
+
 import 'package:acr_cloud_sdk/acr_cloud_sdk.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
@@ -55,6 +58,7 @@ ConcatenatingAudioSource createSongList(List<aq.SongModel> songs) {
 // Audio Recognition
 
 ValueNotifier list = ValueNotifier([]);
+ValueNotifier<String> img = ValueNotifier('');
 
 final AcrCloudSdk arc = AcrCloudSdk();
 
@@ -69,12 +73,45 @@ initArc() {
     ..songModelStream.listen(searchSong);
 }
 
+final songService = SongService();
+
 void searchSong(SongModel song) async {
   try {
     list.value.add(song.metadata!.music![0]);
-
     list.notifyListeners();
+    try {
+      final res = await songService.getTrack(
+          song.metadata!.music![0].externalMetadata!.deezer!.track!.id);
+      final image = res['contributors'][0]['picture_xl'].toString();
+      log(image);
+      img.value = image;
+      img.notifyListeners();
+    } catch (e) {
+      log(e.toString());
+    }
   } catch (e) {
     list.value = null;
+  }
+}
+
+class SongService {
+  Dio _dio = Dio();
+
+  SongService() {
+    BaseOptions options = BaseOptions(
+      receiveTimeout: 100000,
+      connectTimeout: 100000,
+      baseUrl: 'https://api.deezer.com/track/',
+    );
+    _dio = Dio(options);
+  }
+  getTrack(id) async {
+    final response = await _dio.get('$id',
+        options: Options(headers: {
+          'Content-type': 'application/json;charset=UTF8',
+          'Accept': 'application/json;charset=UTF8',
+        }));
+    final result = response.data;
+    return result;
   }
 }

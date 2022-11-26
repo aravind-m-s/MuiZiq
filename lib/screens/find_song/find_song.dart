@@ -66,13 +66,32 @@ class _ScreenFindSongState extends State<ScreenFindSong> {
         children: [
           listenAnotherSong(),
           kHeight30,
-          musicImage(),
+          ValueListenableBuilder(
+            valueListenable: img,
+            builder: (context, value, child) {
+              if (img.value != '') {
+                return imageFromAudio();
+              }
+              return musicImage();
+            },
+          ),
           kHeight20,
           musicDetails(value),
           kHeight30,
           searchButtons(value),
           kHeight30,
         ],
+      ),
+    );
+  }
+
+  Container imageFromAudio() {
+    return Container(
+      height: 200,
+      width: 200,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+            image: NetworkImage(img.value), fit: BoxFit.contain),
       ),
     );
   }
