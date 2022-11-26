@@ -24,13 +24,6 @@ class ScreenPlaylist extends StatefulWidget {
 class _ScreenPlaylistState extends State<ScreenPlaylist> {
   ValueNotifier<List<PlaylistModel>> list = ValueNotifier([]);
 
-  getValuesFromDatabase() async {
-    final db = await Hive.openBox<PlaylistModel>('playlists');
-    list.value.clear();
-    list.value.addAll(db.values);
-    list.notifyListeners();
-  }
-
   @override
   Widget build(BuildContext context) {
     getValuesFromDatabase();
@@ -42,75 +35,48 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
             screenTitle('Playlists'),
             Expanded(
               child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: ValueListenableBuilder(
-                    valueListenable: list,
-                    builder: (context, List<PlaylistModel> value, child) {
-                      getValuesFromDatabase();
-                      if (value.isEmpty) {
-                        return const Center(
-                            child: Text("No Playlist Created yet",
-                                style:
-                                    TextStyle(color: textColor, fontSize: 20)));
-                      }
-                      return GridView.builder(
-                          itemCount: value.length,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  mainAxisExtent: 149,
-                                  mainAxisSpacing: 50,
-                                  crossAxisSpacing: 20),
-                          itemBuilder: (context, index) {
-                            return InkWell(
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (ctx) => ScreenPlaylistView(
-                                    playlistData: value[index],
-                                    index: index,
-                                  ),
-                                ),
+                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                child: ValueListenableBuilder(
+                  valueListenable: list,
+                  builder: (context, List<PlaylistModel> value, child) {
+                    getValuesFromDatabase();
+                    if (value.isEmpty) {
+                      return noPlaylistMessge();
+                    }
+                    return GridView.builder(
+                      itemCount: value.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisExtent: 149,
+                              mainAxisSpacing: 50,
+                              crossAxisSpacing: 20),
+                      itemBuilder: (context, index) {
+                        return InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (ctx) => ScreenPlaylistView(
+                                playlistData: value[index],
+                                index: index,
                               ),
-                              child: Column(
-                                children: [
-                                  Stack(children: [
-                                    Container(
-                                      height: 125,
-                                      width: 125,
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(25),
-                                          image: const DecorationImage(
-                                              image: AssetImage(
-                                                  'lib/assets/MuiZiq.png'))),
-                                    ),
-                                    Positioned(
-                                      bottom: 0,
-                                      right: 0,
-                                      child: IconButton(
-                                        onPressed: () {
-                                          deletePlaylistDialog(
-                                              value[index].name, index);
-                                        },
-                                        icon: const Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                    ),
-                                  ]),
-                                  Text(
-                                    value[index].name,
-                                    style: const TextStyle(
-                                        color: textColor, fontSize: 20),
-                                  )
-                                ],
-                              ),
-                            );
-                          });
-                    },
-                  )),
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Stack(children: [
+                                playlistImage(),
+                                playlistDelete(value, index),
+                              ]),
+                              playlistName(value, index)
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
             ),
             kHeight20,
             buttonWidget('Most Played', const ScreenMostPlayed(), context),
@@ -127,6 +93,63 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
           addPlaylistPopUP(context);
         },
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  getValuesFromDatabase() async {
+    final db = await Hive.openBox<PlaylistModel>('playlists');
+    list.value.clear();
+    list.value.addAll(db.values);
+    list.notifyListeners();
+  }
+
+  Center noPlaylistMessge() {
+    return const Center(
+      child: Text(
+        "No Playlist Created yet",
+        style: TextStyle(
+          color: textColor,
+          fontSize: 20,
+        ),
+      ),
+    );
+  }
+
+  Text playlistName(List<PlaylistModel> value, int index) {
+    return Text(
+      value[index].name,
+      style: const TextStyle(color: textColor, fontSize: 20),
+    );
+  }
+
+  Positioned playlistDelete(List<PlaylistModel> value, int index) {
+    return Positioned(
+      bottom: 0,
+      right: 0,
+      child: IconButton(
+        onPressed: () {
+          deletePlaylistDialog(value[index].name, index);
+        },
+        icon: const Icon(
+          Icons.delete,
+          color: Colors.red,
+        ),
+      ),
+    );
+  }
+
+  Container playlistImage() {
+    return Container(
+      height: 125,
+      width: 125,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        image: const DecorationImage(
+          image: AssetImage(
+            'lib/assets/MuiZiq.png',
+          ),
+        ),
       ),
     );
   }

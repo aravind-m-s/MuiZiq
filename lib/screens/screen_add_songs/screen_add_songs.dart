@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
+import 'package:muiziq_app/db/db_model/music_model.dart';
 import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart';
 import 'package:muiziq_app/screens/widgets/list_view_divider.dart';
 import 'package:muiziq_app/screens/widgets/screen_title.dart';
@@ -24,29 +25,13 @@ class _ScreenAddSongsState extends State<ScreenAddSongs> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.chevron_left)),
-        title: screenTitle('Add Songs'),
-        backgroundColor: bgPrimary,
-        elevation: 0,
-      ),
+      appBar: appBarWidget(context),
       body: SafeArea(
         child: ValueListenableBuilder(
           valueListenable: musicNotifier,
           builder: (context, value, child) {
             if (value.isEmpty) {
-              return const Center(
-                child: Text(
-                  'No Songs to add',
-                  style: TextStyle(
-                    color: textColor,
-                  ),
-                ),
-              );
+              return noSongsWidget();
             }
             return ListView.separated(
                 itemBuilder: (context, index) {
@@ -62,29 +47,7 @@ class _ScreenAddSongsState extends State<ScreenAddSongs> {
                           children: [
                             favButton(value, index),
                             kWidth10,
-                            IconButton(
-                                onPressed: () {
-                                  if (widget.playlist.songIds
-                                      .contains(value[index].id)) {
-                                    widget.playlist
-                                        .deleteData(value[index].id, context);
-                                  } else {
-                                    widget.playlist
-                                        .addData(value[index].id, context);
-                                  }
-                                  setState(() {});
-                                },
-                                icon: Icon(
-                                  widget.playlist.songIds
-                                          .contains(value[index].id)
-                                      ? Icons.playlist_add_check
-                                      : Icons.playlist_add,
-                                  color: widget.playlist.songIds
-                                          .contains(value[index].id)
-                                      ? Colors.green
-                                      : textColor,
-                                  size: 30,
-                                ))
+                            addingButton(value, index, context)
                           ],
                         )
                       ],
@@ -97,6 +60,52 @@ class _ScreenAddSongsState extends State<ScreenAddSongs> {
         ),
       ),
     );
+  }
+
+  AppBar appBarWidget(BuildContext context) {
+    return AppBar(
+      leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: const Icon(Icons.chevron_left)),
+      title: screenTitle('Add Songs'),
+      backgroundColor: bgPrimary,
+      elevation: 0,
+    );
+  }
+
+  Center noSongsWidget() {
+    return const Center(
+      child: Text(
+        'No Songs to add',
+        style: TextStyle(
+          color: textColor,
+        ),
+      ),
+    );
+  }
+
+  IconButton addingButton(
+      List<MusicModel> value, int index, BuildContext context) {
+    return IconButton(
+        onPressed: () {
+          if (widget.playlist.songIds.contains(value[index].id)) {
+            widget.playlist.deleteData(value[index].id, context);
+          } else {
+            widget.playlist.addData(value[index].id, context);
+          }
+          setState(() {});
+        },
+        icon: Icon(
+          widget.playlist.songIds.contains(value[index].id)
+              ? Icons.playlist_add_check
+              : Icons.playlist_add,
+          color: widget.playlist.songIds.contains(value[index].id)
+              ? Colors.green
+              : textColor,
+          size: 30,
+        ));
   }
 
   Container imageWidget() {

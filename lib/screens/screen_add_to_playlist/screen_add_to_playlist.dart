@@ -38,84 +38,100 @@ class _AddToPlaylistState extends State<AddToPlaylist> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             screenTitle('Playlists'),
-            Expanded(
-              child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: ValueListenableBuilder(
-                    valueListenable: list,
-                    builder: (context, List<PlaylistModel> value, child) {
-                      if (value.isEmpty) {
-                        return const Center(
-                            child: Text("No Playlist Created yet",
-                                style:
-                                    TextStyle(color: textColor, fontSize: 20)));
-                      }
-                      return GridView.builder(
-                          itemCount: value.length,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  mainAxisExtent: 149,
-                                  mainAxisSpacing: 50,
-                                  crossAxisSpacing: 20),
-                          itemBuilder: (context, index) {
-                            return InkWell(
-                              onTap: () {
-                                value[index].addData(widget.id, context);
-
-                                Navigator.of(context).pop();
-                              },
-                              child: Column(
-                                children: [
-                                  Stack(children: [
-                                    Container(
-                                      height: 125,
-                                      width: 125,
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(25),
-                                          image: const DecorationImage(
-                                              image: AssetImage(
-                                                  'lib/assets/MuiZiq.png'))),
-                                    ),
-                                    Positioned(
-                                      bottom: 0,
-                                      right: 0,
-                                      child: IconButton(
-                                        onPressed: () {
-                                          deletePlaylist(index, context);
-                                          setState(() {});
-                                        },
-                                        icon: const Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                    ),
-                                  ]),
-                                  Text(
-                                    value[index].name,
-                                    style: const TextStyle(
-                                        color: textColor, fontSize: 20),
-                                  )
-                                ],
-                              ),
-                            );
-                          });
-                    },
-                  )),
-            ),
+            playlistsView(),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: themeColor,
+      floatingActionButton: newPlaylsitButton(context),
+    );
+  }
+
+  Expanded playlistsView() {
+    return Expanded(
+      child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 25.0),
+          child: ValueListenableBuilder(
+            valueListenable: list,
+            builder: (context, List<PlaylistModel> value, child) {
+              if (value.isEmpty) {
+                return noPlaylistWidget();
+              }
+              return GridView.builder(
+                  itemCount: value.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisExtent: 149,
+                      mainAxisSpacing: 50,
+                      crossAxisSpacing: 20),
+                  itemBuilder: (context, index) {
+                    return InkWell(
+                      onTap: () {
+                        value[index].addData(widget.id, context);
+
+                        Navigator.of(context).pop();
+                      },
+                      child: Column(
+                        children: [
+                          Stack(children: [
+                            playlistImage(),
+                            deleteButton(index, context),
+                          ]),
+                          Text(
+                            value[index].name,
+                            style:
+                                const TextStyle(color: textColor, fontSize: 20),
+                          )
+                        ],
+                      ),
+                    );
+                  });
+            },
+          )),
+    );
+  }
+
+  FloatingActionButton newPlaylsitButton(BuildContext context) {
+    return FloatingActionButton(
+      backgroundColor: themeColor,
+      onPressed: () {
+        addPlaylistPopUP(context);
+      },
+      child: const Icon(Icons.add),
+    );
+  }
+
+  Container playlistImage() {
+    return Container(
+      height: 125,
+      width: 125,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(25),
+          image: const DecorationImage(
+              image: AssetImage('lib/assets/MuiZiq.png'))),
+    );
+  }
+
+  Positioned deleteButton(int index, BuildContext context) {
+    return Positioned(
+      bottom: 0,
+      right: 0,
+      child: IconButton(
         onPressed: () {
-          addPlaylistPopUP(context);
+          deletePlaylist(index, context);
+          setState(() {});
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(
+          Icons.delete,
+          color: Colors.red,
+        ),
       ),
     );
+  }
+
+  Center noPlaylistWidget() {
+    return const Center(
+        child: Text("No Playlist Created yet",
+            style: TextStyle(color: textColor, fontSize: 20)));
   }
 
   addPlaylistPopUP(ctx) {

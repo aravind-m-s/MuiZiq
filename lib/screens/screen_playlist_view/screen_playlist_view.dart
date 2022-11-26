@@ -33,44 +33,13 @@ class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        leading: IconButton(
-            icon: const Icon(
-              Icons.chevron_left,
-              color: themeColor,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            }),
-        title: Text(
-          widget.playlistData.name,
-          style: const TextStyle(
-            color: textColor,
-            fontSize: 35,
-          ),
-        ),
-        backgroundColor: bgPrimary,
-        actions: [
-          IconButton(
-              onPressed: () {
-                editPlaylistDialog();
-              },
-              icon: const Icon(
-                Icons.edit,
-                color: themeColor,
-              ))
-        ],
-      ),
+      appBar: appBarWidget(context),
       body: widget.playlistData.songIds.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "No songs added yet",
-                    style: TextStyle(color: textColor, fontSize: 20),
-                  ),
+                  noSongsText(),
                   kHeight30,
                   SizedBox(
                     width: 150,
@@ -94,78 +63,133 @@ class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
                 ],
               ),
             )
-          : ListView.separated(
-              itemBuilder: (context, index) {
-                return InkWell(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (ctx) => ScreenPlaylistPlay(
-                          index: index,
-                          playlistData: widget.playlistData,
-                          allSongs: allPlaylistSongs,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 25.0, vertical: 8),
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 75,
-                          width: 75,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(25),
-                              image: const DecorationImage(
-                                  image: AssetImage('lib/assets/MuiZiq.png'))),
-                        ),
-                        kWidth20,
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                allPlaylistSongs[index].title!,
-                                style: const TextStyle(
-                                    fontSize: 15, color: textColor),
-                              ),
-                              Text(
-                                allPlaylistSongs[index].artist == '<unknown>'
-                                    ? 'Unknown Artist'
-                                    : allPlaylistSongs[index].artist!,
-                                style: const TextStyle(
-                                    fontSize: 11, color: authColor),
-                              )
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                            onPressed: () {
-                              widget.playlistData.deleteData(
-                                  allPlaylistSongs[index].id, context);
-                              setState(() {
-                                listPlaylist();
-                              });
-                            },
-                            icon: const Icon(
-                              Icons.delete,
-                              color: Colors.red,
-                            ))
-                      ],
-                    ),
-                  ),
-                );
-              },
-              separatorBuilder: (context, index) => const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 25.0),
-                child: Divider(
-                  color: Color(0xFF1A2123),
+          : listViewSection(),
+    );
+  }
+
+  ListView listViewSection() {
+    return ListView.separated(
+      itemBuilder: (context, index) {
+        return InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (ctx) => ScreenPlaylistPlay(
+                  index: index,
+                  playlistData: widget.playlistData,
+                  allSongs: allPlaylistSongs,
                 ),
               ),
-              itemCount: allPlaylistSongs.length,
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 8),
+            child: Row(
+              children: [
+                songImage(),
+                kWidth20,
+                songDetails(index),
+                deleteSongButton(index, context)
+              ],
             ),
+          ),
+        );
+      },
+      separatorBuilder: (context, index) => seperatorWidet(),
+      itemCount: allPlaylistSongs.length,
+    );
+  }
+
+  AppBar appBarWidget(BuildContext context) {
+    return AppBar(
+      elevation: 0,
+      leading: IconButton(
+          icon: const Icon(
+            Icons.chevron_left,
+            color: themeColor,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          }),
+      title: Text(
+        widget.playlistData.name,
+        style: const TextStyle(
+          color: textColor,
+          fontSize: 35,
+        ),
+      ),
+      backgroundColor: bgPrimary,
+      actions: [
+        IconButton(
+            onPressed: () {
+              editPlaylistDialog();
+            },
+            icon: const Icon(
+              Icons.edit,
+              color: themeColor,
+            ))
+      ],
+    );
+  }
+
+  Text noSongsText() {
+    return const Text(
+      "No songs added yet",
+      style: TextStyle(color: textColor, fontSize: 20),
+    );
+  }
+
+  Container songImage() {
+    return Container(
+      height: 75,
+      width: 75,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(25),
+          image: const DecorationImage(
+              image: AssetImage('lib/assets/MuiZiq.png'))),
+    );
+  }
+
+  Expanded songDetails(int index) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            allPlaylistSongs[index].title!,
+            style: const TextStyle(fontSize: 15, color: textColor),
+          ),
+          Text(
+            allPlaylistSongs[index].artist == '<unknown>'
+                ? 'Unknown Artist'
+                : allPlaylistSongs[index].artist!,
+            style: const TextStyle(fontSize: 11, color: authColor),
+          )
+        ],
+      ),
+    );
+  }
+
+  IconButton deleteSongButton(int index, BuildContext context) {
+    return IconButton(
+        onPressed: () {
+          widget.playlistData.deleteData(allPlaylistSongs[index].id, context);
+          setState(() {
+            listPlaylist();
+          });
+        },
+        icon: const Icon(
+          Icons.delete,
+          color: Colors.red,
+        ));
+  }
+
+  Padding seperatorWidet() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 25.0),
+      child: Divider(
+        color: Color(0xFF1A2123),
+      ),
     );
   }
 

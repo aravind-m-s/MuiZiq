@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/screens/widgets/bottom_nav.dart';
 import 'package:muiziq_app/screens/widgets/logo.dart';
 
@@ -21,13 +22,24 @@ class _ScreenSplashState extends State<ScreenSplash> {
     return Scaffold(
       body: SafeArea(
         child: Center(
-            child:
-                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Image(image: AssetImage('lib/assets/background.png')),
-          const SizedBox(height: 30),
-          logoText(),
-          const SizedBox(height: 30),
-        ])),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              logoImage(),
+              kHeight30,
+              logoText(),
+              kHeight30,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Image logoImage() {
+    return const Image(
+      image: AssetImage(
+        'lib/assets/background.png',
       ),
     );
   }

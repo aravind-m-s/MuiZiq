@@ -26,6 +26,26 @@ class _ScreenPlayState extends State<ScreenPlay> {
   Duration? dur = Duration();
   bool _isPlaying = false;
 
+  @override
+  void initState() {
+    playSong();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      appBar: appBarWidget(context),
+      body: Column(
+        children: [
+          musicDetails(),
+          bottomControlsBar(),
+        ],
+      ),
+    );
+  }
+
   playSong() async {
     await getSongs();
     await audioPlayer.setAudioSource(createSongList(widget.songs),
@@ -85,26 +105,6 @@ class _ScreenPlayState extends State<ScreenPlay> {
     widget.songs = song;
   }
 
-  @override
-  void initState() {
-    playSong();
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: appBarWidget(context),
-      body: Column(
-        children: [
-          musicDetails(),
-          bottomControlsBar(),
-        ],
-      ),
-    );
-  }
-
   AppBar appBarWidget(BuildContext context) {
     return AppBar(
       leading: IconButton(
@@ -162,33 +162,41 @@ class _ScreenPlayState extends State<ScreenPlay> {
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              height: 250,
-              width: 250,
-              child: QueryArtworkWidget(
-                id: audio[widget.index].id,
-                type: ArtworkType.AUDIO,
-                nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
-              ),
-            ),
-            kHeight30,
-            Text(
-              audio[widget.index].title!,
-              overflow: TextOverflow.fade,
-              maxLines: 1,
-              style: const TextStyle(fontSize: 20, color: textColor),
-            ),
-            Text(
-              audio[widget.index].artist == "<unknown>"
-                  ? "Unknown Artist"
-                  : audio[widget.index].artist!,
-              overflow: TextOverflow.fade,
-              maxLines: 1,
-              style: const TextStyle(fontSize: 15, color: authColor),
-            )
-          ],
+          children: [musicImage(), kHeight30, songDetails()],
         ),
+      ),
+    );
+  }
+
+  Column songDetails() {
+    return Column(
+      children: [
+        Text(
+          audio[widget.index].title!,
+          overflow: TextOverflow.fade,
+          maxLines: 1,
+          style: const TextStyle(fontSize: 20, color: textColor),
+        ),
+        Text(
+          audio[widget.index].artist == "<unknown>"
+              ? "Unknown Artist"
+              : audio[widget.index].artist!,
+          overflow: TextOverflow.fade,
+          maxLines: 1,
+          style: const TextStyle(fontSize: 15, color: authColor),
+        ),
+      ],
+    );
+  }
+
+  SizedBox musicImage() {
+    return SizedBox(
+      height: 250,
+      width: 250,
+      child: QueryArtworkWidget(
+        id: audio[widget.index].id,
+        type: ArtworkType.AUDIO,
+        nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
       ),
     );
   }

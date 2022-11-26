@@ -27,51 +27,6 @@ class ScreenHome extends StatefulWidget {
 }
 
 class _ScreenHomeState extends State<ScreenHome> {
-  permissionHandle() async {
-    var status = await Permission.storage.status;
-    if (status.isDenied) {
-      await Permission.storage.request();
-      setState(() {
-        musics();
-      });
-    }
-  }
-
-  addCheck() async {
-    final musicDB = await Hive.openBox<MusicModel>('musics');
-    final audioQuery = OnAudioQuery();
-    final songs = await audioQuery.querySongs(
-      sortType: null,
-      orderType: OrderType.ASC_OR_SMALLER,
-      uriType: UriType.EXTERNAL,
-      ignoreCase: true,
-    );
-    widget.songs = songs;
-    if (musicDB.values.length < songs.length) {
-      musicDB.deleteAll(musicDB.keys);
-      for (int i = 0; i < songs.length; i++) {
-        final value = MusicModel(
-          id: songs[i].id,
-          uri: songs[i].uri,
-          artist: songs[i].artist,
-          name: songs[i].displayNameWOExt,
-          title: songs[i].title,
-          album: songs[i].album,
-          artistID: songs[i].artistId,
-          isFav: false,
-        );
-        musicDB.add(value);
-      }
-    }
-
-    setState(() {});
-  }
-
-  musics() async {
-    await addCheck();
-    getAllMusic();
-  }
-
   @override
   void initState() {
     permissionHandle();
@@ -97,11 +52,7 @@ class _ScreenHomeState extends State<ScreenHome> {
                   builder: (BuildContext context, List<MusicModel> value,
                       Widget? child) {
                     if (value.isEmpty) {
-                      return const Center(
-                          child: Text(
-                        'No Songs found',
-                        style: TextStyle(color: textColor, fontSize: 20),
-                      ));
+                      return noSongWidget();
                     }
                     return ListView.separated(
                       separatorBuilder: (context, index) => const Divider(
@@ -186,6 +137,59 @@ class _ScreenHomeState extends State<ScreenHome> {
         child: const Icon(Icons.mic),
       ),
     );
+  }
+
+  permissionHandle() async {
+    var status = await Permission.storage.status;
+    if (status.isDenied) {
+      await Permission.storage.request();
+      setState(() {
+        musics();
+      });
+    }
+  }
+
+  addCheck() async {
+    final musicDB = await Hive.openBox<MusicModel>('musics');
+    final audioQuery = OnAudioQuery();
+    final songs = await audioQuery.querySongs(
+      sortType: null,
+      orderType: OrderType.ASC_OR_SMALLER,
+      uriType: UriType.EXTERNAL,
+      ignoreCase: true,
+    );
+    widget.songs = songs;
+    if (musicDB.values.length < songs.length) {
+      musicDB.deleteAll(musicDB.keys);
+      for (int i = 0; i < songs.length; i++) {
+        final value = MusicModel(
+          id: songs[i].id,
+          uri: songs[i].uri,
+          artist: songs[i].artist,
+          name: songs[i].displayNameWOExt,
+          title: songs[i].title,
+          album: songs[i].album,
+          artistID: songs[i].artistId,
+          isFav: false,
+        );
+        musicDB.add(value);
+      }
+    }
+
+    setState(() {});
+  }
+
+  musics() async {
+    await addCheck();
+    getAllMusic();
+  }
+
+  Center noSongWidget() {
+    return const Center(
+        child: Text(
+      'No Songs found',
+      style: TextStyle(color: textColor, fontSize: 20),
+    ));
   }
 
   IconButton playlistButton(int songID) {

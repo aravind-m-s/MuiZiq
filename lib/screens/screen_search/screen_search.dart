@@ -40,12 +40,7 @@ class _ScreenSearchState extends State<ScreenSearch> {
             searchTextField(),
             Expanded(
               child: foundList.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No Songs Found',
-                        style: TextStyle(color: textColor, fontSize: 20),
-                      ),
-                    )
+                  ? noSongsWidget()
                   : ListView.separated(
                       itemBuilder: (context, index) {
                         return InkWell(
@@ -66,20 +61,7 @@ class _ScreenSearchState extends State<ScreenSearch> {
                                   children: [
                                     favButton(index),
                                     kHeight10,
-                                    IconButton(
-                                      onPressed: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (ctx) => AddToPlaylist(
-                                              id: foundList[index].id,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      icon: const Icon(Icons.playlist_add),
-                                      iconSize: 30,
-                                      color: textColor,
-                                    )
+                                    playlistButton(context, index)
                                   ],
                                 )
                               ],
@@ -93,6 +75,32 @@ class _ScreenSearchState extends State<ScreenSearch> {
           ],
         ),
       ),
+    );
+  }
+
+  Center noSongsWidget() {
+    return const Center(
+      child: Text(
+        'No Songs Found',
+        style: TextStyle(color: textColor, fontSize: 20),
+      ),
+    );
+  }
+
+  IconButton playlistButton(BuildContext context, int index) {
+    return IconButton(
+      onPressed: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (ctx) => AddToPlaylist(
+              id: foundList[index].id,
+            ),
+          ),
+        );
+      },
+      icon: const Icon(Icons.playlist_add),
+      iconSize: 30,
+      color: textColor,
     );
   }
 
@@ -136,7 +144,8 @@ class _ScreenSearchState extends State<ScreenSearch> {
     } else {
       result = allList
           .where(
-              (element) => element.name!.toLowerCase().trim().contains(value))
+            (element) => element.title!.toLowerCase().trim().contains(value),
+          )
           .toList();
     }
 

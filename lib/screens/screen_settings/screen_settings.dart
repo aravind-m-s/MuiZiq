@@ -45,15 +45,15 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                 children: [
                   sendMail(),
                   kHeight10,
-                  const Divider(color: themeColor),
+                  dividerWidget(),
                   kHeight10,
                   termsAndConditions(),
                   kHeight10,
-                  const Divider(color: themeColor),
+                  dividerWidget(),
                   kHeight10,
                   privacyPolicy(),
                   kHeight10,
-                  const Divider(color: themeColor),
+                  dividerWidget(),
                   whatsappFilter(),
                   kHeight20,
                   resetApp(),
@@ -69,6 +69,10 @@ class _ScreenSettingsState extends State<ScreenSettings> {
         ),
       ),
     );
+  }
+
+  dividerWidget() {
+    return const Divider(color: themeColor);
   }
 
   resetApp() {

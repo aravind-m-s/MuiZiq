@@ -30,38 +30,12 @@ class _ScreenRecentPlayedState extends State<ScreenRecentPlayed> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back,
-              color: themeColor,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            }),
-        title: const Text(
-          'Recently Played',
-          style: TextStyle(
-            color: textColor,
-            fontSize: 35,
-          ),
-        ),
-        backgroundColor: bgPrimary,
-      ),
+      appBar: appBarWidget(context),
       body: ValueListenableBuilder(
         valueListenable: recent,
         builder: (context, value, child) {
           if (value.isEmpty) {
-            return const Center(
-              child: Text(
-                "No Songs Played recently",
-                style: TextStyle(
-                  fontSize: 20,
-                  color: textColor,
-                ),
-              ),
-            );
+            return noSongsWidget();
           }
           return ListView.separated(
             itemBuilder: (context, index) {
@@ -71,74 +45,126 @@ class _ScreenRecentPlayedState extends State<ScreenRecentPlayed> {
                       horizontal: 30.0, vertical: 15),
                   child: Row(
                     children: [
-                      Container(
-                        height: 75,
-                        width: 75,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(25),
-                            image: const DecorationImage(
-                                image: AssetImage('lib/assets/MuiZiq.png'))),
-                      ),
+                      musicImage(),
                       kWidth20,
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              value[index].title!,
-                              style: const TextStyle(
-                                  fontSize: 15, color: textColor),
-                            ),
-                            Text(
-                              value[index].artist!,
-                              style: const TextStyle(
-                                  fontSize: 11, color: authColor),
-                            )
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => setState(() {
-                          favOption(value[index].id, context);
-                        }),
-                        icon: Icon(
-                          value[index].isFav
-                              ? Icons.favorite
-                              : Icons.favorite_outline,
-                          color: themeColor,
-                          size: 30,
-                        ),
-                      ),
+                      songDetails(value, index),
+                      favButton(value, index, context),
                       kHeight10,
-                      IconButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (ctx) => AddToPlaylist(
-                                  id: value[index].id,
-                                ),
-                              ),
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.playlist_add,
-                            size: 30,
-                            color: textColor,
-                          ))
+                      playlistButton(context, value, index)
                     ],
                   ),
                 ),
               );
             },
-            separatorBuilder: (context, index) => const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40.0),
-              child: Divider(
-                color: themeColor,
-              ),
-            ),
+            separatorBuilder: (context, index) => separatorWidget(),
             itemCount: recentNotifier.value.length,
           );
         },
+      ),
+    );
+  }
+
+  AppBar appBarWidget(BuildContext context) {
+    return AppBar(
+      elevation: 0,
+      leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back,
+            color: themeColor,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          }),
+      title: const Text(
+        'Recently Played',
+        style: TextStyle(
+          color: textColor,
+          fontSize: 35,
+        ),
+      ),
+      backgroundColor: bgPrimary,
+    );
+  }
+
+  Center noSongsWidget() {
+    return const Center(
+      child: Text(
+        "No Songs Played recently",
+        style: TextStyle(
+          fontSize: 20,
+          color: textColor,
+        ),
+      ),
+    );
+  }
+
+  Container musicImage() {
+    return Container(
+      height: 75,
+      width: 75,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(25),
+          image: const DecorationImage(
+              image: AssetImage('lib/assets/MuiZiq.png'))),
+    );
+  }
+
+  Expanded songDetails(List<MusicModel> value, int index) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value[index].title!,
+            style: const TextStyle(fontSize: 15, color: textColor),
+          ),
+          Text(
+            value[index].artist!,
+            style: const TextStyle(fontSize: 11, color: authColor),
+          )
+        ],
+      ),
+    );
+  }
+
+  IconButton favButton(
+      List<MusicModel> value, int index, BuildContext context) {
+    return IconButton(
+      onPressed: () => setState(() {
+        favOption(value[index].id, context);
+      }),
+      icon: Icon(
+        value[index].isFav ? Icons.favorite : Icons.favorite_outline,
+        color: themeColor,
+        size: 30,
+      ),
+    );
+  }
+
+  IconButton playlistButton(
+      BuildContext context, List<MusicModel> value, int index) {
+    return IconButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (ctx) => AddToPlaylist(
+                id: value[index].id,
+              ),
+            ),
+          );
+        },
+        icon: const Icon(
+          Icons.playlist_add,
+          size: 30,
+          color: textColor,
+        ));
+  }
+
+  Padding separatorWidget() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 40.0),
+      child: Divider(
+        color: themeColor,
       ),
     );
   }

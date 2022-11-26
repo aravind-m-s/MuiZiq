@@ -32,6 +32,25 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
   Duration? dur = Duration();
   bool _isPlaying = false;
 
+  @override
+  void initState() {
+    playSong();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: appBarWidget(context),
+      body: Column(
+        children: [
+          musicDetails(),
+          bottomControlsBar(),
+        ],
+      ),
+    );
+  }
+
   playSong() async {
     await playlistToSongModel();
     await audioPlayer.setAudioSource(createSongList(playlistSongs),
@@ -84,25 +103,6 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
     playlistSongs = playlist;
   }
 
-  @override
-  void initState() {
-    playSong();
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: appBarWidget(context),
-      body: Column(
-        children: [
-          musicDetails(),
-          bottomControlsBar(),
-        ],
-      ),
-    );
-  }
-
   AppBar appBarWidget(BuildContext context) {
     return AppBar(
       leading: IconButton(
@@ -113,45 +113,28 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
       ),
       backgroundColor: bgPrimary,
       elevation: 0,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.allSongs[widget.index].title!,
-            overflow: TextOverflow.fade,
-            maxLines: 1,
-            style: const TextStyle(fontSize: 15, color: textColor),
-          ),
-          Text(
-            widget.allSongs[widget.index].artist == "<unknown>"
-                ? "Unknown Artist"
-                : widget.allSongs[widget.index].artist!,
-            overflow: TextOverflow.fade,
-            maxLines: 1,
-            style: const TextStyle(fontSize: 11, color: authColor),
-          )
-        ],
-      ),
+      title: Text('Playlist : ${widget.playlistData.name}'),
       actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: IconButton(
-            icon: IconButton(
-              icon: const Icon(
-                Icons.playlist_add,
-                size: 30,
-              ),
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (ctx) => AddToPlaylist(
-                          id: widget.allSongs[widget.index].id,
-                        )));
-              },
-            ),
-            onPressed: () {},
-          ),
-        )
+        addPlaylistButton(context),
       ],
+    );
+  }
+
+  Padding addPlaylistButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: IconButton(
+        icon: const Icon(
+          Icons.playlist_add,
+          size: 30,
+        ),
+        onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (ctx) => AddToPlaylist(
+                    id: widget.allSongs[widget.index].id,
+                  )));
+        },
+      ),
     );
   }
 
@@ -160,34 +143,42 @@ class _ScreenPlaylistPlayState extends State<ScreenPlaylistPlay> {
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              height: 250,
-              width: 250,
-              child: QueryArtworkWidget(
-                id: widget.allSongs[widget.index].id,
-                type: ArtworkType.AUDIO,
-                nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
-              ),
-            ),
-            kHeight30,
-            Text(
-              widget.allSongs[widget.index].title!,
-              overflow: TextOverflow.fade,
-              maxLines: 1,
-              style: const TextStyle(fontSize: 20, color: textColor),
-            ),
-            Text(
-              widget.allSongs[widget.index].artist == "<unknown>"
-                  ? "Unknown Artist"
-                  : widget.allSongs[widget.index].artist!,
-              overflow: TextOverflow.fade,
-              maxLines: 1,
-              style: const TextStyle(fontSize: 15, color: authColor),
-            )
-          ],
+          children: [songImage(), kHeight30, songDetails()],
         ),
       ),
+    );
+  }
+
+  SizedBox songImage() {
+    return SizedBox(
+      height: 250,
+      width: 250,
+      child: QueryArtworkWidget(
+        id: widget.allSongs[widget.index].id,
+        type: ArtworkType.AUDIO,
+        nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
+      ),
+    );
+  }
+
+  Column songDetails() {
+    return Column(
+      children: [
+        Text(
+          widget.allSongs[widget.index].title!,
+          overflow: TextOverflow.fade,
+          maxLines: 1,
+          style: const TextStyle(fontSize: 20, color: textColor),
+        ),
+        Text(
+          widget.allSongs[widget.index].artist == "<unknown>"
+              ? "Unknown Artist"
+              : widget.allSongs[widget.index].artist!,
+          overflow: TextOverflow.fade,
+          maxLines: 1,
+          style: const TextStyle(fontSize: 15, color: authColor),
+        ),
+      ],
     );
   }
 

@@ -43,11 +43,7 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
             valueListenable: favMusic,
             builder: (context, value, child) {
               if (value.isEmpty) {
-                return const Center(
-                    child: Text(
-                  'No Favourites yet',
-                  style: TextStyle(color: textColor, fontSize: 20),
-                ));
+                return noFavWidget();
               }
               return ListView.separated(
                   itemBuilder: (context, index) {
@@ -65,35 +61,9 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
                             musicImgae(),
                             kWidth20,
                             musicDetails(value, index),
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  favOption(value[index].id, context);
-                                });
-                              },
-                              icon: Icon(
-                                value[index].isFav
-                                    ? Icons.favorite
-                                    : Icons.favorite_outline,
-                                color: themeColor,
-                                size: 30,
-                              ),
-                            ),
+                            favButton(value, index, context),
                             kWidth10,
-                            IconButton(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (ctx) => AddToPlaylist(
-                                      id: value[index].id,
-                                    ),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.playlist_add),
-                              iconSize: 30,
-                              color: textColor,
-                            ),
+                            addPlaylistButton(context, value, index),
                           ],
                         ),
                       ),
@@ -106,6 +76,48 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
         ],
       )),
     );
+  }
+
+  IconButton addPlaylistButton(
+      BuildContext context, List<MusicModel> value, int index) {
+    return IconButton(
+      onPressed: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (ctx) => AddToPlaylist(
+              id: value[index].id,
+            ),
+          ),
+        );
+      },
+      icon: const Icon(Icons.playlist_add),
+      iconSize: 30,
+      color: textColor,
+    );
+  }
+
+  IconButton favButton(
+      List<MusicModel> value, int index, BuildContext context) {
+    return IconButton(
+      onPressed: () {
+        setState(() {
+          favOption(value[index].id, context);
+        });
+      },
+      icon: Icon(
+        value[index].isFav ? Icons.favorite : Icons.favorite_outline,
+        color: themeColor,
+        size: 30,
+      ),
+    );
+  }
+
+  Center noFavWidget() {
+    return const Center(
+        child: Text(
+      'No Favourites yet',
+      style: TextStyle(color: textColor, fontSize: 20),
+    ));
   }
 
   Container musicImgae() {

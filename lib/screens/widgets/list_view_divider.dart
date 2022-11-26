@@ -9,3 +9,18 @@ Padding listViewDivider() {
     ),
   );
 }
+
+// class listViewDivider extends StatelessWidget {
+//   const listViewDivider({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return const Padding(
+//       padding: EdgeInsets.symmetric(horizontal: 40.0),
+//       child: Divider(
+//         color: themeColor,
+//       ),
+//     );
+    
+//   }
+// }
