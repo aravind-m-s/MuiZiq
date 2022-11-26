@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:muiziq_app/constants/constants.dart';
-import 'package:muiziq_app/screens/widgets/bottom_nav.dart';
+import 'package:muiziq_app/screens/screen_splash/widgets/logo_image.dart';
+import 'package:muiziq_app/screens/screen_splash/widgets/navigatio_function.dart';
 import 'package:muiziq_app/screens/widgets/logo.dart';
 
 class ScreenSplash extends StatefulWidget {
@@ -13,7 +14,7 @@ class ScreenSplash extends StatefulWidget {
 class _ScreenSplashState extends State<ScreenSplash> {
   @override
   void initState() {
-    navigationFunc();
+    navigationFunc(context);
     super.initState();
   }
 
@@ -34,20 +35,5 @@ class _ScreenSplashState extends State<ScreenSplash> {
         ),
       ),
     );
-  }
-
-  Image logoImage() {
-    return const Image(
-      image: AssetImage(
-        'lib/assets/background.png',
-      ),
-    );
-  }
-
-  navigationFunc() async {
-    await Future.delayed(const Duration(milliseconds: 1000));
-    // ignore: use_build_context_synchronously
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (ctx) => const ScreenMain()));
   }
 }

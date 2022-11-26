@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
+import 'package:muiziq_app/screens/screen_settings/widgets/reset_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+
+import 'widgets/divider.dart';
+import 'widgets/mail.dart';
+import 'widgets/privacy_policy.dart';
+import 'widgets/terms_and_conditions.dart';
 
 bool val = false;
 
@@ -56,7 +62,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                   dividerWidget(),
                   whatsappFilter(),
                   kHeight20,
-                  resetApp(),
+                  resetApp(context),
                 ],
               ),
             ),
@@ -67,43 +73,6 @@ class _ScreenSettingsState extends State<ScreenSettings> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  dividerWidget() {
-    return const Divider(color: themeColor);
-  }
-
-  resetApp() {
-    return ElevatedButton(
-      onPressed: () {
-        resetAppAlertDialog();
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.red,
-      ),
-      child: const Text('Reset App'),
-    );
-  }
-
-  InkWell sendMail() {
-    return InkWell(
-      onTap: () {
-        launchUrlString('mailto:aravindmangattu38@gmail.com');
-      },
-      child: Row(
-        children: const [
-          Icon(
-            Icons.message,
-            color: textColor,
-          ),
-          kWidth10,
-          Text(
-            'Give a feedback',
-            style: TextStyle(color: textColor, fontSize: 18),
-          ),
-        ],
       ),
     );
   }
@@ -135,116 +104,6 @@ class _ScreenSettingsState extends State<ScreenSettings> {
           )
         ],
       ),
-    );
-  }
-
-  termsAndConditions() {
-    return InkWell(
-      onTap: () {},
-      child: Row(
-        children: const [
-          Icon(
-            Icons.filter_none,
-            color: textColor,
-          ),
-          kWidth10,
-          Text(
-            'Terms and conditions',
-            style: TextStyle(color: textColor, fontSize: 18),
-          ),
-        ],
-      ),
-    );
-  }
-
-  share() {
-    return InkWell(
-      onTap: () {},
-      child: Row(
-        children: const [
-          Icon(
-            Icons.filter_none,
-            color: textColor,
-          ),
-          kWidth10,
-          Text(
-            'Share the app',
-            style: TextStyle(color: textColor, fontSize: 18),
-          ),
-        ],
-      ),
-    );
-  }
-
-  privacyPolicy() {
-    return InkWell(
-      onTap: () {
-        launchUrlString(
-            'https://docs.google.com/document/d/1Dk_yRZfG9Rcf66sI_tIpBs2qle5dm0NcwiC2nXC9oQE/edit?usp=sharing');
-      },
-      child: Row(
-        children: const [
-          Icon(
-            Icons.security,
-            color: textColor,
-          ),
-          kWidth10,
-          Text(
-            'Privacy policy',
-            style: TextStyle(color: textColor, fontSize: 18),
-          ),
-        ],
-      ),
-    );
-  }
-
-  resetAppAlertDialog() {
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: bgPrimary,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Center(
-            child: Text(
-              'Are you sure!!',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-          content: const SizedBox(
-            height: 65,
-            child: Center(
-              child: Text(
-                'Resetting the app will remove all your playlist and favorite songs.',
-                style: TextStyle(color: textColor),
-              ),
-            ),
-          ),
-          actions: [
-            SizedBox(
-              width: 140,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                child: const Text('Cancel'),
-              ),
-            ),
-            SizedBox(
-              width: 140,
-              child: ElevatedButton(
-                onPressed: () {
-                  resetApplication(context);
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text('Reset App'),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 }

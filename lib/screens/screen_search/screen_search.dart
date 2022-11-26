@@ -5,6 +5,11 @@ import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
 import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist.dart';
 import 'package:muiziq_app/screens/screen_play/screen_play.dart';
+import 'package:muiziq_app/screens/screen_search/widgets/image_widget.dart';
+import 'package:muiziq_app/screens/screen_search/widgets/index_finder.dart';
+import 'package:muiziq_app/screens/screen_search/widgets/no_songs.dart';
+import 'package:muiziq_app/screens/screen_search/widgets/playlist_button.dart';
+import 'package:muiziq_app/screens/screen_search/widgets/title_author.dart';
 import 'package:muiziq_app/screens/widgets/list_view_divider.dart';
 import 'package:muiziq_app/screens/widgets/screen_title.dart';
 
@@ -39,38 +44,7 @@ class _ScreenSearchState extends State<ScreenSearch> {
             screenTitle('Search'),
             searchTextField(),
             Expanded(
-              child: foundList.isEmpty
-                  ? noSongsWidget()
-                  : ListView.separated(
-                      itemBuilder: (context, index) {
-                        return InkWell(
-                          onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (ctx) => ScreenPlay(
-                                      index: indexFinder(foundList[index])))),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 30.0, vertical: 15),
-                            child: Row(
-                              children: [
-                                imageWidget(),
-                                kWidth10,
-                                titleAndAuthor(index),
-                                Row(
-                                  children: [
-                                    favButton(index),
-                                    kHeight10,
-                                    playlistButton(context, index)
-                                  ],
-                                )
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                      separatorBuilder: (context, index) => listViewDivider(),
-                      itemCount: foundList.length),
+              child: foundList.isEmpty ? noSongsWidget() : searchedList(),
             ),
           ],
         ),
@@ -78,35 +52,37 @@ class _ScreenSearchState extends State<ScreenSearch> {
     );
   }
 
-  Center noSongsWidget() {
-    return const Center(
-      child: Text(
-        'No Songs Found',
-        style: TextStyle(color: textColor, fontSize: 20),
-      ),
-    );
-  }
-
-  IconButton playlistButton(BuildContext context, int index) {
-    return IconButton(
-      onPressed: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (ctx) => AddToPlaylist(
-              id: foundList[index].id,
+  ListView searchedList() {
+    return ListView.separated(
+        itemBuilder: (context, index) {
+          return InkWell(
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (ctx) =>
+                        ScreenPlay(index: indexFinder(foundList[index])))),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 30.0, vertical: 15),
+              child: Row(
+                children: [
+                  imageWidget(),
+                  kWidth10,
+                  titleAndAuthor(index, foundList),
+                  Row(
+                    children: [
+                      favButton(index, foundList),
+                      kHeight10,
+                      playlistButton(context, index, foundList)
+                    ],
+                  )
+                ],
+              ),
             ),
-          ),
-        );
-      },
-      icon: const Icon(Icons.playlist_add),
-      iconSize: 30,
-      color: textColor,
-    );
-  }
-
-  indexFinder(MusicModel data) {
-    List<MusicModel> list = musicNotifier.value;
-    return list.indexOf(data);
+          );
+        },
+        separatorBuilder: (context, index) => listViewDivider(),
+        itemCount: foundList.length);
   }
 
   Padding searchTextField() {
@@ -154,40 +130,7 @@ class _ScreenSearchState extends State<ScreenSearch> {
     });
   }
 
-  Container imageWidget() {
-    return Container(
-      height: 75,
-      width: 75,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        image: const DecorationImage(
-          image: AssetImage('lib/assets/MuiZiq.png'),
-        ),
-      ),
-    );
-  }
-
-  Expanded titleAndAuthor(int index) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            foundList[index].title!,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            style: const TextStyle(fontSize: 15, color: textColor),
-          ),
-          Text(
-            foundList[index].artist!,
-            style: const TextStyle(fontSize: 11, color: authColor),
-          )
-        ],
-      ),
-    );
-  }
-
-  IconButton favButton(int index) {
+  IconButton favButton(int index, foundList) {
     return IconButton(
       onPressed: () {
         favOption(foundList[index].id, context);
