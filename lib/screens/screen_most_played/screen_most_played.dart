@@ -6,6 +6,7 @@ import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
 import 'package:muiziq_app/db/db_model/recent_model/recent_model.dart';
 import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 class ScreenMostPlayed extends StatefulWidget {
   const ScreenMostPlayed({super.key});
@@ -46,7 +47,7 @@ class _ScreenMostPlayedState extends State<ScreenMostPlayed> {
                       horizontal: 30.0, vertical: 15),
                   child: Row(
                     children: [
-                      songImage(),
+                      songImage(audio.indexOf(value[index])),
                       kWidth20,
                       songDetails(value, index),
                       favButton(value, index, context),
@@ -125,14 +126,16 @@ class _ScreenMostPlayedState extends State<ScreenMostPlayed> {
     );
   }
 
-  Container songImage() {
-    return Container(
+  SizedBox songImage(index) {
+    return SizedBox(
       height: 75,
       width: 75,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(25),
-          image: const DecorationImage(
-              image: AssetImage('lib/assets/MuiZiq.png'))),
+      child: QueryArtworkWidget(
+        id: audio[index].id,
+        type: ArtworkType.AUDIO,
+        artworkBorder: BorderRadius.zero,
+        nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
+      ),
     );
   }
 

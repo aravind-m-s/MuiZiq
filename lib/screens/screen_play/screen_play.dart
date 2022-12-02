@@ -138,21 +138,21 @@ class _ScreenPlayState extends State<ScreenPlay> {
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
           child: IconButton(
-            icon: IconButton(
-              icon: const Icon(
-                Icons.playlist_add,
-                size: 30,
-              ),
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (ctx) => AddToPlaylist(
-                          id: audio[widget.index].id,
-                        )));
-              },
+            icon: const Icon(
+              Icons.playlist_add,
+              size: 30,
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => AddToPlaylist(
+                    id: audio[widget.index].id,
+                  ),
+                ),
+              );
+            },
           ),
-        )
+        ),
       ],
     );
   }

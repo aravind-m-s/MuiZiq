@@ -3,7 +3,6 @@ import 'package:just_audio/just_audio.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
-import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist.dart';
 import 'package:muiziq_app/screens/screen_play/screen_play.dart';
 import 'package:muiziq_app/screens/screen_search/widgets/image_widget.dart';
 import 'package:muiziq_app/screens/screen_search/widgets/index_finder.dart';
@@ -66,7 +65,7 @@ class _ScreenSearchState extends State<ScreenSearch> {
                   const EdgeInsets.symmetric(horizontal: 30.0, vertical: 15),
               child: Row(
                 children: [
-                  imageWidget(),
+                  imageWidget(audio.indexOf(foundList[index])),
                   kWidth10,
                   titleAndAuthor(index, foundList),
                   Row(

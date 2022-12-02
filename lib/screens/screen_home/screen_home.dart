@@ -54,42 +54,7 @@ class _ScreenHomeState extends State<ScreenHome> {
                     if (value.isEmpty) {
                       return noSongWidget();
                     }
-                    return ListView.separated(
-                      separatorBuilder: (context, index) => const Divider(
-                        color: themeColor,
-                      ),
-                      itemCount: value.length,
-                      itemBuilder: (context, index) {
-                        return InkWell(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (ctx) => ScreenPlay(index: index),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8.0, horizontal: 0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                musicImage(),
-                                kWidth20,
-                                Expanded(child: musicDetails(value, index)),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    favButton(index, value),
-                                    playlistButton(value[index].id)
-                                  ],
-                                )
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
+                    return musicsList(value);
                   },
                 ),
               ),
@@ -136,6 +101,43 @@ class _ScreenHomeState extends State<ScreenHome> {
         backgroundColor: themeColor,
         child: const Icon(Icons.mic),
       ),
+    );
+  }
+
+  ListView musicsList(List<MusicModel> value) {
+    return ListView.separated(
+      separatorBuilder: (context, index) => const Divider(
+        color: themeColor,
+      ),
+      itemCount: value.length,
+      itemBuilder: (context, index) {
+        return InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (ctx) => ScreenPlay(index: index),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                musicImage(),
+                kWidth20,
+                Expanded(child: musicDetails(value, index)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    favButton(index, value),
+                    playlistButton(value[index].id)
+                  ],
+                )
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

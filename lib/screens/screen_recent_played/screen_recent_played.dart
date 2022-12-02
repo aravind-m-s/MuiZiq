@@ -5,6 +5,7 @@ import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
 import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 class ScreenRecentPlayed extends StatefulWidget {
   const ScreenRecentPlayed({super.key});
@@ -45,7 +46,7 @@ class _ScreenRecentPlayedState extends State<ScreenRecentPlayed> {
                       horizontal: 30.0, vertical: 15),
                   child: Row(
                     children: [
-                      musicImage(),
+                      musicImage(audio.indexOf(value[index])),
                       kWidth20,
                       songDetails(value, index),
                       favButton(value, index, context),
@@ -57,7 +58,7 @@ class _ScreenRecentPlayedState extends State<ScreenRecentPlayed> {
               );
             },
             separatorBuilder: (context, index) => separatorWidget(),
-            itemCount: recentNotifier.value.length,
+            itemCount: value.length,
           );
         },
       ),
@@ -98,14 +99,16 @@ class _ScreenRecentPlayedState extends State<ScreenRecentPlayed> {
     );
   }
 
-  Container musicImage() {
-    return Container(
+  SizedBox musicImage(index) {
+    return SizedBox(
       height: 75,
       width: 75,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(25),
-          image: const DecorationImage(
-              image: AssetImage('lib/assets/MuiZiq.png'))),
+      child: QueryArtworkWidget(
+        id: audio[index].id,
+        type: ArtworkType.AUDIO,
+        artworkBorder: BorderRadius.zero,
+        nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
+      ),
     );
   }
 

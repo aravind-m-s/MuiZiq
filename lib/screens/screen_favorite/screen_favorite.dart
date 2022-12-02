@@ -9,6 +9,7 @@ import 'package:muiziq_app/screens/screen_add_to_playlist/screen_add_to_playlist
 import 'package:muiziq_app/screens/screen_play/screen_play.dart';
 import 'package:muiziq_app/screens/widgets/list_view_divider.dart';
 import 'package:muiziq_app/screens/widgets/screen_title.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 List<MusicModel> allMusics = [];
 ValueNotifier<List<MusicModel>> favMusic = ValueNotifier([]);
@@ -58,7 +59,7 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
                             horizontal: 30.0, vertical: 15),
                         child: Row(
                           children: [
-                            musicImgae(),
+                            musicImgae(audio.indexOf(value[index])),
                             kWidth20,
                             musicDetails(value, index),
                             favButton(value, index, context),
@@ -120,14 +121,16 @@ class _ScreenFavoriteState extends State<ScreenFavorite> {
     ));
   }
 
-  Container musicImgae() {
-    return Container(
+  SizedBox musicImgae(index) {
+    return SizedBox(
       height: 75,
       width: 75,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(25),
-          image: const DecorationImage(
-              image: AssetImage('lib/assets/MuiZiq.png'))),
+      child: QueryArtworkWidget(
+        id: audio[index].id,
+        type: ArtworkType.AUDIO,
+        artworkBorder: BorderRadius.zero,
+        nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
+      ),
     );
   }
 

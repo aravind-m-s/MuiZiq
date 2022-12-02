@@ -43,37 +43,7 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
                     if (value.isEmpty) {
                       return noPlaylistMessge();
                     }
-                    return GridView.builder(
-                      itemCount: value.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisExtent: 149,
-                              mainAxisSpacing: 50,
-                              crossAxisSpacing: 20),
-                      itemBuilder: (context, index) {
-                        return InkWell(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (ctx) => ScreenPlaylistView(
-                                playlistData: value[index],
-                                index: index,
-                              ),
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Stack(children: [
-                                playlistImage(),
-                                playlistDelete(value, index),
-                              ]),
-                              playlistName(value, index)
-                            ],
-                          ),
-                        );
-                      },
-                    );
+                    return playlists(value);
                   },
                 ),
               ),
@@ -87,13 +57,50 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: themeColor,
-        onPressed: () {
-          addPlaylistPopUP(context);
-        },
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: addButton(context),
+    );
+  }
+
+  FloatingActionButton addButton(BuildContext context) {
+    return FloatingActionButton(
+      backgroundColor: themeColor,
+      onPressed: () {
+        addPlaylistPopUP(context);
+      },
+      child: const Icon(Icons.add),
+    );
+  }
+
+  GridView playlists(List<PlaylistModel> value) {
+    return GridView.builder(
+      itemCount: value.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisExtent: 149,
+          mainAxisSpacing: 50,
+          crossAxisSpacing: 20),
+      itemBuilder: (context, index) {
+        return InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (ctx) => ScreenPlaylistView(
+                playlistData: value[index],
+                index: index,
+              ),
+            ),
+          ),
+          child: Column(
+            children: [
+              Stack(children: [
+                playlistImage(),
+                playlistDelete(value, index),
+              ]),
+              playlistName(value, index)
+            ],
+          ),
+        );
+      },
     );
   }
 

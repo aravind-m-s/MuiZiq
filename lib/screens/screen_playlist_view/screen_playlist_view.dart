@@ -6,6 +6,7 @@ import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart'
     as pd;
 import 'package:muiziq_app/screens/screen_add_songs/screen_add_songs.dart';
 import 'package:muiziq_app/screens/screen_playlist_play/screen_playlist_play.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 List<MusicModel> allPlaylistSongs = [];
 
@@ -86,7 +87,7 @@ class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
             padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 8),
             child: Row(
               children: [
-                songImage(),
+                songImage(audio.indexOf(allPlaylistSongs[index])),
                 kWidth20,
                 songDetails(index),
                 deleteSongButton(index, context)
@@ -139,14 +140,16 @@ class _ScreenPlaylistViewState extends State<ScreenPlaylistView> {
     );
   }
 
-  Container songImage() {
-    return Container(
+  SizedBox songImage(index) {
+    return SizedBox(
       height: 75,
       width: 75,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(25),
-          image: const DecorationImage(
-              image: AssetImage('lib/assets/MuiZiq.png'))),
+      child: QueryArtworkWidget(
+        id: audio[index].id,
+        type: ArtworkType.AUDIO,
+        artworkBorder: BorderRadius.zero,
+        nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
+      ),
     );
   }
 

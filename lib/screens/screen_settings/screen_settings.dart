@@ -3,7 +3,6 @@ import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/screens/screen_settings/widgets/reset_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 import 'widgets/divider.dart';
 import 'widgets/mail.dart';

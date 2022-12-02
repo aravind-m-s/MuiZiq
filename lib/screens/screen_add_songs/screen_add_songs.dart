@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/db/db_model/music_model.dart';
-import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart';
+import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart'
+    as pd;
 import 'package:muiziq_app/screens/widgets/list_view_divider.dart';
 import 'package:muiziq_app/screens/widgets/screen_title.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 class ScreenAddSongs extends StatefulWidget {
   final int index;
-  final PlaylistModel playlist;
+  final pd.PlaylistModel playlist;
   const ScreenAddSongs(
       {super.key, required this.index, required this.playlist});
 
@@ -40,7 +42,7 @@ class _ScreenAddSongsState extends State<ScreenAddSongs> {
                         horizontal: 30.0, vertical: 15),
                     child: Row(
                       children: [
-                        imageWidget(),
+                        imageWidget(audio.indexOf(value[index])),
                         kWidth20,
                         titleAndAuthor(value, index),
                         Row(
@@ -108,15 +110,15 @@ class _ScreenAddSongsState extends State<ScreenAddSongs> {
         ));
   }
 
-  Container imageWidget() {
-    return Container(
+  SizedBox imageWidget(index) {
+    return SizedBox(
       height: 75,
       width: 75,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        image: const DecorationImage(
-          image: AssetImage('lib/assets/MuiZiq.png'),
-        ),
+      child: QueryArtworkWidget(
+        id: audio[index].id,
+        type: ArtworkType.AUDIO,
+        artworkBorder: BorderRadius.zero,
+        nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
       ),
     );
   }
