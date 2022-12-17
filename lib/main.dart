@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:muiziq_app/constants/constants.dart';
-import 'package:muiziq_app/db/db_model/music_model.dart';
-import 'package:muiziq_app/db/db_model/playlist_model/playlist_model.dart';
-import 'package:muiziq_app/db/db_model/recent_model/recent_model.dart';
-import 'package:muiziq_app/screens/screen_splash/screen_splash.dart';
+import 'package:muiziq_app/View/screen_splash/screen_splash.dart';
+import 'package:muiziq_app/Model/music_model.dart';
+import 'package:muiziq_app/Model/playlist_model/playlist_model.dart';
+import 'package:muiziq_app/Model/recent_model/recent_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
