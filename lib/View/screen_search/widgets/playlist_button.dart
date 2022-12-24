@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/View/screen_add_to_playlist/screen_add_to_playlist.dart';
 
-IconButton playlistButton(BuildContext context, int index, foundList) {
+IconButton playlistButton(BuildContext context, music) {
   return IconButton(
     onPressed: () {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (ctx) => AddToPlaylist(
-            id: foundList[index].id,
+            id: music.id,
           ),
         ),
       );

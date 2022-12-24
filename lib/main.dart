@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:muiziq_app/Controller/bottom_nav/bottom_nav_bloc.dart';
+import 'package:muiziq_app/Controller/favorite/favorite_bloc.dart';
+import 'package:muiziq_app/Controller/home/home_bloc.dart';
+import 'package:muiziq_app/Controller/most_played/most_played_bloc.dart';
+import 'package:muiziq_app/Controller/playing/playing_bloc.dart';
+import 'package:muiziq_app/Controller/playlist/playlist_bloc.dart';
+import 'package:muiziq_app/Controller/recent/recent_bloc.dart';
+import 'package:muiziq_app/Controller/search/search_bloc.dart';
+import 'package:muiziq_app/Controller/settings/settings_bloc.dart';
 import 'package:muiziq_app/constants/constants.dart';
 import 'package:muiziq_app/View/screen_splash/screen_splash.dart';
 import 'package:muiziq_app/Model/music_model.dart';
@@ -32,12 +42,43 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const ScreenSplash(),
-      theme: ThemeData(
-        scaffoldBackgroundColor: bgPrimary,
-        primaryColor: themeColor,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => HomeBloc(),
+        ),
+        BlocProvider(
+          create: (context) => FavoriteBloc(),
+        ),
+        BlocProvider(
+          create: (context) => SettingsBloc(),
+        ),
+        BlocProvider(
+          create: (context) => SearchBloc(),
+        ),
+        BlocProvider(
+          create: (context) => PlaylistBloc(),
+        ),
+        BlocProvider(
+          create: (context) => PlayingBloc(),
+        ),
+        BlocProvider(
+          create: (context) => RecentBloc(),
+        ),
+        BlocProvider(
+          create: (context) => MostPlayedBloc(),
+        ),
+        BlocProvider(
+          create: (context) => BottomNavBloc(),
+        ),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: const ScreenSplash(),
+        theme: ThemeData(
+          scaffoldBackgroundColor: bgPrimary,
+          primaryColor: themeColor,
+        ),
       ),
     );
   }

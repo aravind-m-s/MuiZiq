@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:muiziq_app/Controller/settings/settings_bloc.dart';
+import 'package:muiziq_app/View/screen_splash/screen_splash.dart';
 import 'package:muiziq_app/constants/constants.dart';
-import 'package:muiziq_app/db/db_functions/db_functions.dart';
 
 resetApp(context) {
   return ElevatedButton(
@@ -51,7 +53,10 @@ resetAppAlertDialog(context) {
             width: 140,
             child: ElevatedButton(
               onPressed: () {
-                resetApplication(context);
+                BlocProvider.of<SettingsBloc>(context).add(ResetApplication());
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const ScreenSplash(),
+                ));
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               child: const Text('Reset App'),

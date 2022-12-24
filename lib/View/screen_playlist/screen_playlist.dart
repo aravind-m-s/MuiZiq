@@ -1,32 +1,24 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
 
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/adapters.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:muiziq_app/Controller/playlist/playlist_bloc.dart';
+import 'package:muiziq_app/View/widgets/snacbar.dart';
 import 'package:muiziq_app/constants/constants.dart';
-import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/View/screen_most_played/screen_most_played.dart';
 import 'package:muiziq_app/View/screen_playlist_view/screen_playlist_view.dart';
 import 'package:muiziq_app/View/screen_recent_played/screen_recent_played.dart';
 import 'package:muiziq_app/View/widgets/screen_title.dart';
 import 'package:muiziq_app/Model/playlist_model/playlist_model.dart';
 
-bool isVisible = false;
-
-class ScreenPlaylist extends StatefulWidget {
-  final AudioPlayer audioPlayer;
-  const ScreenPlaylist({super.key, required this.audioPlayer});
-
-  @override
-  State<ScreenPlaylist> createState() => _ScreenPlaylistState();
-}
-
-class _ScreenPlaylistState extends State<ScreenPlaylist> {
-  ValueNotifier<List<PlaylistModel>> list = ValueNotifier([]);
+class ScreenPlaylist extends StatelessWidget {
+  const ScreenPlaylist({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    getValuesFromDatabase();
+    BlocProvider.of<PlaylistBloc>(context).add(GetAllPlaylist());
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -36,16 +28,7 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                child: ValueListenableBuilder(
-                  valueListenable: list,
-                  builder: (context, List<PlaylistModel> value, child) {
-                    getValuesFromDatabase();
-                    if (value.isEmpty) {
-                      return noPlaylistMessge();
-                    }
-                    return playlists(value);
-                  },
-                ),
+                child: playlists(),
               ),
             ),
             kHeight20,
@@ -71,44 +54,43 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
     );
   }
 
-  GridView playlists(List<PlaylistModel> value) {
-    return GridView.builder(
-      itemCount: value.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisExtent: 149,
-          mainAxisSpacing: 50,
-          crossAxisSpacing: 20),
-      itemBuilder: (context, index) {
-        return InkWell(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (ctx) => ScreenPlaylistView(
-                playlistData: value[index],
-                index: index,
+  playlists() {
+    return BlocBuilder<PlaylistBloc, PlaylistState>(
+      builder: (context, state) {
+        if (state.playlists.isEmpty) {
+          return noPlaylistMessge();
+        }
+        return GridView.builder(
+          itemCount: state.playlists.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisExtent: 149,
+              mainAxisSpacing: 50,
+              crossAxisSpacing: 20),
+          itemBuilder: (context, index) {
+            return InkWell(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (ctx) => ScreenPlaylistView(
+                    index: index,
+                  ),
+                ),
               ),
-            ),
-          ),
-          child: Column(
-            children: [
-              Stack(children: [
-                playlistImage(),
-                playlistDelete(value, index),
-              ]),
-              playlistName(value, index)
-            ],
-          ),
+              child: Column(
+                children: [
+                  Stack(children: [
+                    playlistImage(),
+                    playlistDelete(index, context),
+                  ]),
+                  playlistName(state.playlists[index].name)
+                ],
+              ),
+            );
+          },
         );
       },
     );
-  }
-
-  getValuesFromDatabase() async {
-    final db = await Hive.openBox<PlaylistModel>('playlists');
-    list.value.clear();
-    list.value.addAll(db.values);
-    list.notifyListeners();
   }
 
   Center noPlaylistMessge() {
@@ -123,20 +105,20 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
     );
   }
 
-  Text playlistName(List<PlaylistModel> value, int index) {
+  Text playlistName(String name) {
     return Text(
-      value[index].name,
+      name,
       style: const TextStyle(color: textColor, fontSize: 20),
     );
   }
 
-  Positioned playlistDelete(List<PlaylistModel> value, int index) {
+  Positioned playlistDelete(int index, BuildContext context) {
     return Positioned(
       bottom: 0,
       right: 0,
       child: IconButton(
         onPressed: () {
-          deletePlaylistDialog(value[index].name, index);
+          deletePlaylistDialog(index, context);
         },
         icon: const Icon(
           Icons.delete,
@@ -187,7 +169,7 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
     );
   }
 
-  deletePlaylistDialog(playlist, index) {
+  deletePlaylistDialog(int index, BuildContext context) {
     return showDialog(
       context: context,
       builder: (context) {
@@ -199,9 +181,9 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
             'Are You Sure!!!',
             style: TextStyle(color: Colors.red),
           ),
-          content: Text(
-            'Do you want to delete the playlist $playlist',
-            style: const TextStyle(color: textColor),
+          content: const Text(
+            'Do you want to delete the playlist',
+            style: TextStyle(color: textColor),
           ),
           actions: [
             SizedBox(
@@ -219,9 +201,8 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 child: const Text('Delete'),
                 onPressed: () {
-                  deletePlaylist(index, context);
-                  setState(() {});
-
+                  BlocProvider.of<PlaylistBloc>(context)
+                      .add(DeletePlaylist(index: index));
                   Navigator.of(context).pop();
                 },
               ),
@@ -251,13 +232,6 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
               height: 90,
               child: Column(
                 children: [
-                  Visibility(
-                    visible: isVisible,
-                    child: const Text(
-                      'Cannot be empty',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ),
                   kHeight10,
                   TextField(
                     controller: controller,
@@ -306,22 +280,14 @@ class _ScreenPlaylistState extends State<ScreenPlaylist> {
         onPressed: () {
           if (func == 0) {
             Navigator.of(context).pop();
-            isVisible = false;
           } else {
             if (controller.text.isEmpty || controller.text == null) {
-              setState(() {
-                isVisible = true;
-                Navigator.of(context).pop();
-                addPlaylistPopUP(context);
-              });
+              Navigator.of(context).pop();
+              warningSncakbar(context, 'Playlist name cannot be empty');
             } else {
-              setState(() {
-                isVisible = false;
-                Navigator.of(context).pop();
-                addPlaylistPopUP(context);
-              });
               final value = PlaylistModel(name: controller.text, songIds: []);
-              addPlaylist(value, context);
+              BlocProvider.of<PlaylistBloc>(context)
+                  .add(AddPlaylist(playlist: value));
               Navigator.of(context).pop();
             }
           }

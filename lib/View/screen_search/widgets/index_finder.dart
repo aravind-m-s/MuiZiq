@@ -1,7 +1,7 @@
-import 'package:muiziq_app/db/db_functions/db_functions.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:muiziq_app/Model/music_model.dart';
 
-indexFinder(MusicModel data) {
-  List<MusicModel> list = musicNotifier.value;
-  return list.indexOf(data);
+indexFinder(MusicModel data) async {
+  final db = await Hive.openBox<MusicModel>('musics');
+  return db.values.toList().indexOf(data);
 }

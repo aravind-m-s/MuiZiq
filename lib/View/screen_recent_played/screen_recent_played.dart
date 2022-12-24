@@ -1,68 +1,55 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:muiziq_app/Controller/favorite/favorite_bloc.dart';
+import 'package:muiziq_app/Controller/recent/recent_bloc.dart';
 import 'package:muiziq_app/constants/constants.dart';
-import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/View/screen_add_to_playlist/screen_add_to_playlist.dart';
 import 'package:muiziq_app/Model/music_model.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
-class ScreenRecentPlayed extends StatefulWidget {
+class ScreenRecentPlayed extends StatelessWidget {
   const ScreenRecentPlayed({super.key});
 
   @override
-  State<ScreenRecentPlayed> createState() => _ScreenRecentPlayedState();
-}
-
-class _ScreenRecentPlayedState extends State<ScreenRecentPlayed> {
-  ValueNotifier<List<MusicModel>> recent = ValueNotifier([]);
-
-  adding() async {
-    await addAllRecent();
-    getAllRecentList();
-  }
-
-  @override
-  void initState() {
-    adding();
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) =>
+        BlocProvider.of<RecentBloc>(context).add(GetAllRecent()));
     return Scaffold(
-      appBar: appBarWidget(context),
-      body: ValueListenableBuilder(
-        valueListenable: recent,
-        builder: (context, value, child) {
-          if (value.isEmpty) {
-            return noSongsWidget();
-          }
-          return ListView.separated(
-            itemBuilder: (context, index) {
-              return InkWell(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 30.0, vertical: 15),
-                  child: Row(
-                    children: [
-                      musicImage(audio.indexOf(value[index])),
-                      kWidth20,
-                      songDetails(value, index),
-                      favButton(value, index, context),
-                      kHeight10,
-                      playlistButton(context, value, index)
-                    ],
+        appBar: appBarWidget(context),
+        body: BlocBuilder<RecentBloc, RecentState>(
+          builder: (context, state) {
+            if (state.recents.isEmpty) {
+              return noSongsWidget();
+            }
+            return ListView.separated(
+              itemBuilder: (context, index) {
+                final music = state.recents[index];
+                return InkWell(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30.0, vertical: 15),
+                    child: Row(
+                      children: [
+                        musicImage(music.id),
+                        kWidth20,
+                        songDetails(music),
+                        favButton(music, context),
+                        kHeight10,
+                        playlistButton(context, music.id)
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-            separatorBuilder: (context, index) => separatorWidget(),
-            itemCount: value.length,
-          );
-        },
-      ),
-    );
+                );
+              },
+              separatorBuilder: (context, index) => separatorWidget(),
+              itemCount: state.recents.length,
+            );
+          },
+        ));
+    // },
+    //   ),
+    // );
   }
 
   AppBar appBarWidget(BuildContext context) {
@@ -99,30 +86,35 @@ class _ScreenRecentPlayedState extends State<ScreenRecentPlayed> {
     );
   }
 
-  SizedBox musicImage(index) {
+  SizedBox musicImage(id) {
     return SizedBox(
       height: 75,
       width: 75,
-      child: QueryArtworkWidget(
-        id: audio[index].id,
-        type: ArtworkType.AUDIO,
-        artworkBorder: BorderRadius.zero,
-        nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15),
+        child: QueryArtworkWidget(
+          id: id,
+          artworkQuality: FilterQuality.high,
+          type: ArtworkType.AUDIO,
+          artworkBorder: BorderRadius.zero,
+          artworkFit: BoxFit.cover,
+          nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
+        ),
       ),
     );
   }
 
-  Expanded songDetails(List<MusicModel> value, int index) {
+  Expanded songDetails(MusicModel value) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            value[index].title!,
+            value.title!,
             style: const TextStyle(fontSize: 15, color: textColor),
           ),
           Text(
-            value[index].artist!,
+            value.artist!,
             style: const TextStyle(fontSize: 11, color: authColor),
           )
         ],
@@ -130,28 +122,29 @@ class _ScreenRecentPlayedState extends State<ScreenRecentPlayed> {
     );
   }
 
-  IconButton favButton(
-      List<MusicModel> value, int index, BuildContext context) {
-    return IconButton(
-      onPressed: () => setState(() {
-        favOption(value[index].id, context);
-      }),
-      icon: Icon(
-        value[index].isFav ? Icons.favorite : Icons.favorite_outline,
-        color: themeColor,
-        size: 30,
-      ),
+  favButton(MusicModel music, BuildContext context) {
+    return BlocBuilder<FavoriteBloc, FavoriteState>(
+      builder: (context, state) {
+        return IconButton(
+          onPressed: () => BlocProvider.of<FavoriteBloc>(context)
+              .add(FavoriteAddRemove(id: music.id)),
+          icon: Icon(
+            music.isFav ? Icons.favorite : Icons.favorite_outline,
+            color: themeColor,
+            size: 30,
+          ),
+        );
+      },
     );
   }
 
-  IconButton playlistButton(
-      BuildContext context, List<MusicModel> value, int index) {
+  IconButton playlistButton(BuildContext context, int id) {
     return IconButton(
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (ctx) => AddToPlaylist(
-                id: value[index].id,
+                id: id,
               ),
             ),
           );
@@ -170,17 +163,5 @@ class _ScreenRecentPlayedState extends State<ScreenRecentPlayed> {
         color: themeColor,
       ),
     );
-  }
-
-  getAllRecentList() {
-    recent.value.clear();
-    for (int i = recentNotifier.value.length - 1; i >= 0; i--) {
-      for (int j = 0; j < musicNotifier.value.length; j++) {
-        if (recentNotifier.value[i].songIds == musicNotifier.value[j].id) {
-          recent.value.add(musicNotifier.value[j]);
-        }
-      }
-    }
-    recent.notifyListeners();
   }
 }

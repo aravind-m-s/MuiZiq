@@ -1,13 +1,8 @@
 // ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-
-import 'dart:developer';
-
-import 'package:acr_cloud_sdk/acr_cloud_sdk.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:muiziq_app/db/db_functions/db_functions.dart';
+import 'package:muiziq_app/Model/music_model.dart';
 import 'package:on_audio_query/on_audio_query.dart' as aq;
 
 // Colors
@@ -32,8 +27,7 @@ const kHeight30 = SizedBox(height: 30);
 
 // Audio Constants
 
-var audio = musicNotifier.value;
-ValueNotifier<bool> isPlaying = ValueNotifier(false);
+List<MusicModel> audio = [];
 
 // Playlist Setting
 
@@ -55,63 +49,64 @@ ConcatenatingAudioSource createSongList(List<aq.SongModel> songs) {
   return ConcatenatingAudioSource(children: sources);
 }
 
-// Audio Recognition
+// closed due to API server Issue
+// Audio Recognition 
 
-ValueNotifier list = ValueNotifier([]);
-ValueNotifier<String> img = ValueNotifier('');
+// ValueNotifier list = ValueNotifier([]);
+// ValueNotifier<String> img = ValueNotifier('');
 
-final AcrCloudSdk arc = AcrCloudSdk();
+// final AcrCloudSdk arc = AcrCloudSdk();
 
-initArc() {
-  arc
-    ..init(
-      host: 'identify-ap-southeast-1.acrcloud.com',
-      accessKey: '8db103397174cae22221f699329d467d',
-      accessSecret: 'IBSCZmce2Ap82vgOyLPUWDol7n2e6NULFWUrmFqk',
-      setLog: false,
-    )
-    ..songModelStream.listen(searchSong);
-}
+// initArc() {
+//   arc
+//     ..init(
+//       host: 'identify-ap-southeast-1.acrcloud.com',
+//       accessKey: '8db103397174cae22221f699329d467d',
+//       accessSecret: 'IBSCZmce2Ap82vgOyLPUWDol7n2e6NULFWUrmFqk',
+//       setLog: false,
+//     )
+//     ..songModelStream.listen(searchSong);
+// }
 
-final songService = SongService();
+// final songService = SongService();
 
-void searchSong(SongModel song) async {
-  try {
-    list.value.add(song.metadata!.music![0]);
-    list.notifyListeners();
-    try {
-      final res = await songService.getTrack(
-          song.metadata!.music![0].externalMetadata!.deezer!.track!.id);
-      final image = res['contributors'][0]['picture_xl'].toString();
-      log(image);
-      img.value = image;
-      img.notifyListeners();
-    } catch (e) {
-      log(e.toString());
-    }
-  } catch (e) {
-    list.value = null;
-  }
-}
+// void searchSong(SongModel song) async {
+//   try {
+//     list.value.add(song.metadata!.music![0]);
+//     list.notifyListeners();
+//     try {
+//       final res = await songService.getTrack(
+//           song.metadata!.music![0].externalMetadata!.deezer!.track!.id);
+//       final image = res['contributors'][0]['picture_xl'].toString();
+//       log(image);
+//       img.value = image;
+//       img.notifyListeners();
+//     } catch (e) {
+//       log(e.toString());
+//     }
+//   } catch (e) {
+//     list.value = null;
+//   }
+// }
 
-class SongService {
-  Dio _dio = Dio();
+// class SongService {
+//   Dio _dio = Dio();
 
-  SongService() {
-    BaseOptions options = BaseOptions(
-      receiveTimeout: 100000,
-      connectTimeout: 100000,
-      baseUrl: 'https://api.deezer.com/track/',
-    );
-    _dio = Dio(options);
-  }
-  getTrack(id) async {
-    final response = await _dio.get('$id',
-        options: Options(headers: {
-          'Content-type': 'application/json;charset=UTF8',
-          'Accept': 'application/json;charset=UTF8',
-        }));
-    final result = response.data;
-    return result;
-  }
-}
+//   SongService() {
+//     BaseOptions options = BaseOptions(
+//       receiveTimeout: 100000,
+//       connectTimeout: 100000,
+//       baseUrl: 'https://api.deezer.com/track/',
+//     );
+//     _dio = Dio(options);
+//   }
+//   getTrack(id) async {
+//     final response = await _dio.get('$id',
+//         options: Options(headers: {
+//           'Content-type': 'application/json;charset=UTF8',
+//           'Accept': 'application/json;charset=UTF8',
+//         }));
+//     final result = response.data;
+//     return result;
+//   }
+// }

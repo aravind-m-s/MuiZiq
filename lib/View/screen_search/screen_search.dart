@@ -1,90 +1,89 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:muiziq_app/Controller/favorite/favorite_bloc.dart';
+import 'package:muiziq_app/Controller/search/search_bloc.dart';
 import 'package:muiziq_app/constants/constants.dart';
-import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/View/screen_play/screen_play.dart';
 import 'package:muiziq_app/View/screen_search/widgets/image_widget.dart';
-import 'package:muiziq_app/View/screen_search/widgets/index_finder.dart';
 import 'package:muiziq_app/View/screen_search/widgets/no_songs.dart';
 import 'package:muiziq_app/View/screen_search/widgets/playlist_button.dart';
 import 'package:muiziq_app/View/screen_search/widgets/title_author.dart';
 import 'package:muiziq_app/View/widgets/list_view_divider.dart';
 import 'package:muiziq_app/View/widgets/screen_title.dart';
-import 'package:muiziq_app/Model/music_model.dart';
 
-class ScreenSearch extends StatefulWidget {
-  final AudioPlayer audioPlayer;
-  const ScreenSearch({super.key, required this.audioPlayer});
-
-  @override
-  State<ScreenSearch> createState() => _ScreenSearchState();
-}
-
-class _ScreenSearchState extends State<ScreenSearch> {
-  List<MusicModel> allList = [];
-  List<MusicModel> foundList = [];
-
-  @override
-  void initState() {
-    allList.addAll(musicNotifier.value);
-    if (foundList.isEmpty) {
-      foundList = allList;
-    }
-    super.initState();
-  }
+class ScreenSearch extends StatelessWidget {
+  const ScreenSearch({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback(
+      (timeStamp) =>
+          BlocProvider.of<SearchBloc>(context).add(SearchQuery(query: '')),
+    );
     return Scaffold(
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             screenTitle('Search'),
-            searchTextField(),
-            Expanded(
-              child: foundList.isEmpty ? noSongsWidget() : searchedList(),
-            ),
+            searchTextField(context),
+            searchedList(),
           ],
         ),
       ),
     );
   }
 
-  ListView searchedList() {
-    return ListView.separated(
-        itemBuilder: (context, index) {
-          return InkWell(
-            onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (ctx) =>
-                        ScreenPlay(index: indexFinder(foundList[index])))),
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 30.0, vertical: 15),
-              child: Row(
-                children: [
-                  imageWidget(audio.indexOf(foundList[index])),
-                  kWidth10,
-                  titleAndAuthor(index, foundList),
-                  Row(
-                    children: [
-                      favButton(index, foundList),
-                      kHeight10,
-                      playlistButton(context, index, foundList)
-                    ],
-                  )
-                ],
-              ),
-            ),
-          );
+  searchedList() {
+    return Expanded(
+      child: BlocBuilder<SearchBloc, SearchState>(
+        builder: (context, state) {
+          if (state.result.isEmpty) {
+            return noSongsWidget();
+          }
+          return ListView.separated(
+              itemBuilder: (context, index) {
+                final music = state.result[index];
+                return InkWell(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (ctx) => ScreenPlay(
+                        index: audio.indexOf(music),
+                        songs: const [],
+                      ),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30.0, vertical: 15),
+                    child: Row(
+                      children: [
+                        imageWidget(music.id),
+                        kWidth10,
+                        titleAndAuthor(music),
+                        Row(
+                          children: [
+                            favButton(music),
+                            kHeight10,
+                            playlistButton(context, music)
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                );
+              },
+              separatorBuilder: (context, index) => listViewDivider(),
+              itemCount: state.result.length);
         },
-        separatorBuilder: (context, index) => listViewDivider(),
-        itemCount: foundList.length);
+      ),
+    );
   }
 
-  Padding searchTextField() {
+  Padding searchTextField(context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: TextField(
@@ -107,39 +106,27 @@ class _ScreenSearchState extends State<ScreenSearch> {
             size: 30,
           ),
         ),
-        onChanged: (value) => searchWidget(value),
+        onChanged: (value) =>
+            BlocProvider.of<SearchBloc>(context).add(SearchQuery(query: value)),
       ),
     );
   }
 
-  searchWidget(value) {
-    List<MusicModel> result = [];
-    if (value.isEmpty) {
-      result = allList;
-    } else {
-      result = allList
-          .where(
-            (element) => element.title!.toLowerCase().trim().contains(value),
-          )
-          .toList();
-    }
-
-    setState(() {
-      foundList = result;
-    });
-  }
-
-  IconButton favButton(int index, foundList) {
-    return IconButton(
-      onPressed: () {
-        favOption(foundList[index].id, context);
-        setState(() {});
+  favButton(music) {
+    return BlocBuilder<FavoriteBloc, FavoriteState>(
+      builder: (context, state) {
+        return IconButton(
+          onPressed: () {
+            BlocProvider.of<FavoriteBloc>(context)
+                .add(FavoriteAddRemove(id: music.id));
+          },
+          icon: Icon(
+            music.isFav ? Icons.favorite : Icons.favorite_outline,
+            color: themeColor,
+            size: 30,
+          ),
+        );
       },
-      icon: Icon(
-        foundList[index].isFav ? Icons.favorite : Icons.favorite_outline,
-        color: themeColor,
-        size: 30,
-      ),
     );
   }
 }

@@ -1,39 +1,39 @@
 // ignore_for_file: must_be_immutable, invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:muiziq_app/Controller/favorite/favorite_bloc.dart';
+import 'package:muiziq_app/Controller/playing/playing_bloc.dart';
+import 'package:muiziq_app/Model/music_model.dart';
 import 'package:muiziq_app/constants/constants.dart';
-import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/View/screen_add_to_playlist/screen_add_to_playlist.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ScreenPlay extends StatefulWidget {
+class ScreenPlay extends StatelessWidget {
   int index;
-  List<SongModel> songs = [];
-  ScreenPlay({
-    super.key,
-    required this.index,
-  });
+  List<SongModel>? songs = [];
+  ScreenPlay({super.key, required this.index, this.songs});
 
-  @override
-  State<ScreenPlay> createState() => _ScreenPlayState();
-}
-
-class _ScreenPlayState extends State<ScreenPlay> {
   // ignore: prefer_const_constructors
   Duration? dur = Duration();
-  bool _isPlaying = false;
-
-  @override
-  void initState() {
-    playSong();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
+    playSong(context);
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (timeStamp == const Duration(milliseconds: 100)) {
+        BlocProvider.of<PlayingBloc>(context)
+            .add(PlayingStateInitial(id: songs![index].id));
+        BlocProvider.of<PlayingBloc>(context)
+            .add(AddToRecent(id: songs![index].id));
+      }
+    });
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: appBarWidget(context),
@@ -46,21 +46,13 @@ class _ScreenPlayState extends State<ScreenPlay> {
     );
   }
 
-  playSong() async {
+  playSong(context) async {
     await getSongs();
-    await audioPlayer.setAudioSource(createSongList(widget.songs),
-        initialIndex: widget.index);
-    setState(() {
-      audioPlayer.play();
-    });
-    isPlaying.value = true;
-    isPlaying.notifyListeners();
-    _isPlaying = true;
-    audioPlayer.playingStream.listen((event) {
-      if (event) {
-        addToRecent(audio[widget.index].id);
-      }
-    });
+
+    await audioPlayer.setAudioSource(createSongList(songs!),
+        initialIndex: index);
+
+    audioPlayer.play();
     audioPlayer.durationStream.listen((event) {
       dur = event;
     });
@@ -69,24 +61,27 @@ class _ScreenPlayState extends State<ScreenPlay> {
           // ignore: prefer_const_constructors
           dur != Duration() &&
           audioPlayer.loopMode != LoopMode.one) {
-        if (audioPlayer.hasNext) {
-          widget.index += 1;
-          audioPlayer.pause();
-          await audioPlayer.seekToNext();
-          _isPlaying = true;
-          audioPlayer.play();
-          setState(() {});
+        if (audioPlayer.hasNext &&
+            audioPlayer.currentIndex! != audio.length - 1) {
+          BlocProvider.of<PlayingBloc>(context).add(SeekNext());
         } else {
-          _isPlaying = true;
           audioPlayer.play();
         }
       }
+    });
+    audioPlayer.currentIndexStream.listen((event) {
+      BlocProvider.of<PlayingBloc>(context)
+          .add(PlayingStateInitial(id: songs![audioPlayer.currentIndex!].id));
+    });
+    audioPlayer.currentIndexStream.listen((event) {
+      BlocProvider.of<PlayingBloc>(context)
+          .add(AddToRecent(id: songs![audioPlayer.currentIndex!].id));
     });
   }
 
   getSongs() async {
     final audioQuery = OnAudioQuery();
-    final songs = await audioQuery.querySongs(
+    final querySongs = await audioQuery.querySongs(
       sortType: null,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
@@ -97,12 +92,21 @@ class _ScreenPlayState extends State<ScreenPlay> {
     final prefs = await SharedPreferences.getInstance();
     final bool? filter = prefs.getBool('filter');
     if (filter == true) {
-      song =
-          songs.where((element) => element.album != 'WhatsApp Audio').toList();
+      song = querySongs
+          .where((element) => element.album != 'WhatsApp Audio')
+          .toList();
     } else {
-      song = songs;
+      song = querySongs;
     }
-    widget.songs = song;
+    if (songs == null || songs!.isEmpty) {
+      songs = song;
+      // convertSongIds();
+    }
+  }
+
+  convertSongIds() async {
+    final db = await Hive.openBox<MusicModel>('musics');
+    audio = db.values.toList();
   }
 
   AppBar appBarWidget(BuildContext context) {
@@ -115,24 +119,30 @@ class _ScreenPlayState extends State<ScreenPlay> {
       ),
       backgroundColor: bgPrimary,
       elevation: 0,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            audio[widget.index].title!,
-            overflow: TextOverflow.fade,
-            maxLines: 1,
-            style: const TextStyle(fontSize: 15, color: textColor),
-          ),
-          Text(
-            audio[widget.index].artist == "<unknown>"
-                ? "Unknown Artist"
-                : audio[widget.index].artist!,
-            overflow: TextOverflow.fade,
-            maxLines: 1,
-            style: const TextStyle(fontSize: 11, color: authColor),
-          )
-        ],
+      title: BlocBuilder<PlayingBloc, PlayingState>(
+        builder: (context, state) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                state.music == null ? '' : state.music!.title!,
+                overflow: TextOverflow.fade,
+                maxLines: 1,
+                style: const TextStyle(fontSize: 15, color: textColor),
+              ),
+              Text(
+                state.music == null
+                    ? ''
+                    : audio[audioPlayer.currentIndex!].artist == "<unknown>"
+                        ? "Unknown Artist"
+                        : audio[audioPlayer.currentIndex!].artist!,
+                overflow: TextOverflow.fade,
+                maxLines: 1,
+                style: const TextStyle(fontSize: 11, color: authColor),
+              )
+            ],
+          );
+        },
       ),
       actions: [
         Padding(
@@ -146,7 +156,7 @@ class _ScreenPlayState extends State<ScreenPlay> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (ctx) => AddToPlaylist(
-                    id: audio[widget.index].id,
+                    id: audio[audioPlayer.currentIndex!].id,
                   ),
                 ),
               );
@@ -160,27 +170,40 @@ class _ScreenPlayState extends State<ScreenPlay> {
   Expanded musicDetails() {
     return Expanded(
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [musicImage(), kHeight30, songDetails()],
+        child: BlocBuilder<PlayingBloc, PlayingState>(
+          builder: (context, state) {
+            if (state.music == null) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                ),
+              );
+            }
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                musicImage(state.music!.id),
+                kHeight30,
+                songDetails(state.music)
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
-  Column songDetails() {
+  Column songDetails(music) {
     return Column(
       children: [
         Text(
-          audio[widget.index].title!,
+          music.title!,
           overflow: TextOverflow.fade,
           maxLines: 1,
           style: const TextStyle(fontSize: 20, color: textColor),
         ),
         Text(
-          audio[widget.index].artist == "<unknown>"
-              ? "Unknown Artist"
-              : audio[widget.index].artist!,
+          music.artist == "<unknown>" ? "Unknown Artist" : music.artist!,
           overflow: TextOverflow.fade,
           maxLines: 1,
           style: const TextStyle(fontSize: 15, color: authColor),
@@ -189,14 +212,17 @@ class _ScreenPlayState extends State<ScreenPlay> {
     );
   }
 
-  SizedBox musicImage() {
+  SizedBox musicImage(id) {
     return SizedBox(
       height: 250,
       width: 250,
-      child: QueryArtworkWidget(
-        id: audio[widget.index].id,
-        type: ArtworkType.AUDIO,
-        nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: QueryArtworkWidget(
+          id: id,
+          type: ArtworkType.AUDIO,
+          nullArtworkWidget: Image.asset('lib/assets/MuiZiq.png'),
+        ),
       ),
     );
   }
@@ -213,30 +239,36 @@ class _ScreenPlayState extends State<ScreenPlay> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              favoriteButton(),
-              reverse10sec(),
-              previousSongButton(),
-              pauseAndPlayButton(),
-              nextSongButton(),
-              skip10sec(),
-              IconButton(
-                onPressed: () async {
-                  audioPlayer.loopMode == LoopMode.one
-                      ? await audioPlayer.setLoopMode(LoopMode.off)
-                      : await audioPlayer.setLoopMode(LoopMode.one);
-                  setState(() {});
-                },
-                icon: Icon(
-                  audioPlayer.loopMode == LoopMode.one
-                      ? Icons.repeat_one
-                      : Icons.repeat_outlined,
-                  color: themeColor,
-                ),
-              ),
-            ],
+          BlocBuilder<PlayingBloc, PlayingState>(
+            builder: (context, state) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  favoriteButton(audio[audioPlayer.currentIndex ?? 0]),
+                  reverse10sec(),
+                  previousSongButton(state.prev, context),
+                  pauseAndPlayButton(state.playing, context),
+                  nextSongButton(state, context),
+                  skip10sec(),
+                  BlocBuilder<PlayingBloc, PlayingState>(
+                    builder: (context, state) {
+                      return IconButton(
+                        onPressed: () {
+                          BlocProvider.of<PlayingBloc>(context)
+                              .add(ChangeLoopMode());
+                        },
+                        icon: Icon(
+                          state.loop!
+                              ? Icons.repeat_one
+                              : Icons.repeat_outlined,
+                          color: themeColor,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              );
+            },
           ),
           Column(
             children: [
@@ -288,46 +320,39 @@ class _ScreenPlayState extends State<ScreenPlay> {
     );
   }
 
-  IconButton favoriteButton() {
-    return IconButton(
-      onPressed: () {
-        favOption(audio[widget.index].id, context);
-        setState(() {});
+  favoriteButton(MusicModel music) {
+    return BlocBuilder<FavoriteBloc, FavoriteState>(
+      builder: (context, state) {
+        return IconButton(
+          onPressed: () {
+            BlocProvider.of<FavoriteBloc>(context)
+                .add(FavoriteAddRemove(id: music.id));
+          },
+          icon: Icon(
+            music.isFav ? Icons.favorite : Icons.favorite_outline,
+            color: themeColor,
+          ),
+        );
       },
-      icon: Icon(
-        audio[widget.index].isFav ? Icons.favorite : Icons.favorite_outline,
-        color: themeColor,
-      ),
     );
   }
 
-  IconButton previousSongButton() {
+  IconButton previousSongButton(prev, context) {
     return IconButton(
       onPressed: () async {
-        if (audioPlayer.hasPrevious && audioPlayer.loopMode != LoopMode.one) {
-          audioPlayer.pause();
-          await audioPlayer.seekToPrevious();
-          audioPlayer.play();
-          widget.index -= 1;
-          _isPlaying = true;
-
-          setState(() {
-            musicDetails();
-          });
-        } else {
-          _isPlaying = true;
-        }
+        if (prev && audioPlayer.loopMode != LoopMode.one) {
+          BlocProvider.of<PlayingBloc>(context).add(SeekPrevious());
+        } else {}
       },
       icon: Icon(
         Icons.skip_previous,
         size: 35,
-        color:
-            audioPlayer.hasPrevious ? textColor : Colors.grey.withOpacity(0.5),
+        color: prev ? textColor : Colors.grey.withOpacity(0.5),
       ),
     );
   }
 
-  CircleAvatar pauseAndPlayButton() {
+  CircleAvatar pauseAndPlayButton(playing, context) {
     return CircleAvatar(
       radius: 40,
       backgroundColor: const Color(0xFF212A2D),
@@ -336,52 +361,36 @@ class _ScreenPlayState extends State<ScreenPlay> {
           radius: 30,
           backgroundColor: const Color(0xFFFF9E49),
           child: Center(
-            child: IconButton(
-              icon: Icon(
-                _isPlaying ? Icons.pause : Icons.play_arrow,
-                color: textColor,
-                size: 30,
-              ),
-              onPressed: () {
-                if (_isPlaying) {
-                  audioPlayer.pause();
-                } else {
-                  audioPlayer.play();
-                }
-                setState(
-                  () {
-                    isPlaying.value = !isPlaying.value;
-                    isPlaying.notifyListeners();
-                    _isPlaying = !_isPlaying;
-                  },
-                );
-              },
+              child: IconButton(
+            icon: Icon(
+              playing ?? false ? Icons.pause : Icons.play_arrow,
+              color: textColor,
+              size: 30,
             ),
-          ),
+            onPressed: () {
+              BlocProvider.of<PlayingBloc>(context).add(PlayingStartStop());
+            },
+          )),
         ),
       ),
     );
   }
 
-  IconButton nextSongButton() {
+  IconButton nextSongButton(state, context) {
     return IconButton(
       onPressed: () async {
-        if (audioPlayer.hasNext && audioPlayer.loopMode != LoopMode.one) {
-          widget.index += 1;
-          audioPlayer.pause();
-          await audioPlayer.seekToNext();
-          audioPlayer.play();
-          _isPlaying = true;
-
-          setState(() {});
-        } else {
-          _isPlaying = true;
+        if (state.next &&
+            audioPlayer.loopMode != LoopMode.one &&
+            state.music.id != audio.last.id) {
+          BlocProvider.of<PlayingBloc>(context).add(
+            SeekNext(),
+          );
         }
       },
       icon: Icon(
         Icons.skip_next,
         size: 35,
-        color: audioPlayer.hasNext ? textColor : Colors.grey.withOpacity(0.5),
+        color: state.next ? textColor : Colors.grey.withOpacity(0.5),
       ),
     );
   }

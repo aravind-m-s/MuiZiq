@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:muiziq_app/Controller/bottom_nav/bottom_nav_bloc.dart';
+import 'package:muiziq_app/Controller/home/home_bloc.dart';
+import 'package:muiziq_app/Controller/playing/playing_bloc.dart';
 import 'package:muiziq_app/constants/constants.dart';
-import 'package:muiziq_app/db/db_functions/db_functions.dart';
 import 'package:muiziq_app/View/screen_favorite/screen_favorite.dart';
 import 'package:muiziq_app/View/screen_home/screen_home.dart';
 import 'package:muiziq_app/View/screen_play/screen_play.dart';
@@ -15,23 +18,31 @@ class ScreenMain extends StatefulWidget {
 }
 
 class _ScreenMainState extends State<ScreenMain> {
-  static int currentSelectedIndex = 0;
   @override
   Widget build(BuildContext context) {
-    List pages = [
-      ScreenHome(audioPlayer: audioPlayer),
-      ScreenSearch(audioPlayer: audioPlayer),
-      ScreenFavorite(audioPlayer: audioPlayer),
-      ScreenPlaylist(audioPlayer: audioPlayer),
+    List pages = const [
+      ScreenHome(),
+      ScreenSearch(),
+      ScreenFavorite(),
+      ScreenPlaylist(),
     ];
     return Scaffold(
       body: Stack(
         children: [
-          pages[currentSelectedIndex],
-          ValueListenableBuilder(
-            valueListenable: isPlaying,
-            builder: (context, value, child) {
-              return value ? miniPlayer(context) : const Text('');
+          BlocBuilder<BottomNavBloc, BottomNavState>(
+            builder: (context, state) {
+              return pages[state.index];
+            },
+          ),
+          BlocBuilder<PlayingBloc, PlayingState>(
+            builder: (context, state) {
+              if (state.playing == true) {
+                BlocProvider.of<BottomNavBloc>(context)
+                    .add(InitializeBottomNav());
+                return miniPlayer(context);
+              } else {
+                return const SizedBox();
+              }
             },
           )
         ],
@@ -41,45 +52,50 @@ class _ScreenMainState extends State<ScreenMain> {
             topLeft: Radius.circular(25), topRight: Radius.circular(25)),
         child: SizedBox(
           height: 80,
-          child: BottomNavigationBar(
-            currentIndex: currentSelectedIndex,
-            onTap: (value) => setState(() {
-              currentSelectedIndex = value;
-            }),
-            selectedItemColor: themeColor,
-            unselectedItemColor: textColor,
-            items: const [
-              BottomNavigationBarItem(
-                backgroundColor: bottomNavColor,
-                icon: Icon(
-                  Icons.music_note,
-                  size: 25,
-                ),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                  backgroundColor: bottomNavColor,
-                  icon: Icon(
-                    Icons.search,
-                    size: 25,
+          child: BlocBuilder<BottomNavBloc, BottomNavState>(
+            builder: (context, state) {
+              return BottomNavigationBar(
+                currentIndex: state.index,
+                onTap: (value) => setState(() {
+                  BlocProvider.of<BottomNavBloc>(context)
+                      .add(ChangeIndex(value));
+                }),
+                selectedItemColor: themeColor,
+                unselectedItemColor: textColor,
+                items: const [
+                  BottomNavigationBarItem(
+                    backgroundColor: bottomNavColor,
+                    icon: Icon(
+                      Icons.music_note,
+                      size: 25,
+                    ),
+                    label: 'Home',
                   ),
-                  label: 'Search'),
-              BottomNavigationBarItem(
-                  backgroundColor: bottomNavColor,
-                  icon: Icon(
-                    Icons.favorite,
-                    size: 25,
-                  ),
-                  label: 'Favourite'),
-              BottomNavigationBarItem(
-                backgroundColor: bottomNavColor,
-                icon: Icon(
-                  Icons.playlist_add_check,
-                  size: 25,
-                ),
-                label: 'Playlist',
-              )
-            ],
+                  BottomNavigationBarItem(
+                      backgroundColor: bottomNavColor,
+                      icon: Icon(
+                        Icons.search,
+                        size: 25,
+                      ),
+                      label: 'Search'),
+                  BottomNavigationBarItem(
+                      backgroundColor: bottomNavColor,
+                      icon: Icon(
+                        Icons.favorite,
+                        size: 25,
+                      ),
+                      label: 'Favourite'),
+                  BottomNavigationBarItem(
+                    backgroundColor: bottomNavColor,
+                    icon: Icon(
+                      Icons.playlist_add_check,
+                      size: 25,
+                    ),
+                    label: 'Playlist',
+                  )
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -87,10 +103,6 @@ class _ScreenMainState extends State<ScreenMain> {
   }
 
   Positioned miniPlayer(BuildContext context) {
-    audioPlayer.playerStateStream.listen((event) {
-      setState(() {});
-    });
-    int audioIndex = audioPlayer.currentIndex!;
     return Positioned(
       bottom: 0,
       child: InkWell(
@@ -116,22 +128,40 @@ class _ScreenMainState extends State<ScreenMain> {
                         image: AssetImage('lib/assets/MuiZiq.png'))),
               ),
               // kWidth20,
-              SizedBox(
-                width: 130,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      musicNotifier.value[audioIndex].title!,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: textColor, fontSize: 18),
+              BlocBuilder<HomeBloc, HomeState>(
+                builder: (context, state) {
+                  if (audioPlayer.currentIndex == null) {
+                    return const SizedBox();
+                  }
+                  return SizedBox(
+                    width: 130,
+                    child: BlocBuilder<BottomNavBloc, BottomNavState>(
+                      builder: (context, state) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              state.music?.title ?? '',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: const TextStyle(
+                                  color: textColor, fontSize: 18),
+                            ),
+                            Text(
+                              state.music?.album ?? '',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: const TextStyle(
+                                color: themeColor,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
-                    Text(
-                      musicNotifier.value[audioIndex].artist!,
-                      style: const TextStyle(color: themeColor, fontSize: 11),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
               // kWidth20,
               Row(
@@ -139,11 +169,9 @@ class _ScreenMainState extends State<ScreenMain> {
                   IconButton(
                     onPressed: () {
                       if (audioPlayer.hasPrevious) {
-                        audioPlayer.pause();
-                        audioPlayer.seekToPrevious();
-                        audioPlayer.play();
+                        BlocProvider.of<BottomNavBloc>(context)
+                            .add(BottomNavSeekPrevious());
                       }
-                      setState(() {});
                     },
                     icon: Icon(
                       Icons.skip_previous,
@@ -156,28 +184,26 @@ class _ScreenMainState extends State<ScreenMain> {
                   CircleAvatar(
                     radius: 23,
                     backgroundColor: themeColor,
-                    child: IconButton(
-                        onPressed: () {
-                          if (audioPlayer.playing) {
-                            audioPlayer.pause();
-                          } else {
-                            audioPlayer.play();
-                          }
-                          setState(() {});
-                        },
-                        icon: Icon(
-                          audioPlayer.playing ? Icons.pause : Icons.play_arrow,
-                          color: textColor,
-                        )),
+                    child: BlocBuilder<BottomNavBloc, BottomNavState>(
+                      builder: (context, state) {
+                        return IconButton(
+                            onPressed: () {
+                              BlocProvider.of<BottomNavBloc>(context)
+                                  .add(AudiPlayerPlayPause());
+                            },
+                            icon: Icon(
+                              state.playing! ? Icons.pause : Icons.play_arrow,
+                              color: textColor,
+                            ));
+                      },
+                    ),
                   ),
                   IconButton(
                     onPressed: () {
                       if (audioPlayer.hasNext) {
-                        audioPlayer.pause();
-                        audioPlayer.seekToNext();
-                        audioPlayer.play();
+                        BlocProvider.of<BottomNavBloc>(context)
+                            .add(BottomNavSeekNext());
                       }
-                      setState(() {});
                     },
                     icon: Icon(
                       Icons.skip_next,
