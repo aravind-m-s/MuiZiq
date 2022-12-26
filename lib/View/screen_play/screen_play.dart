@@ -72,11 +72,11 @@ class ScreenPlay extends StatelessWidget {
     audioPlayer.currentIndexStream.listen((event) {
       BlocProvider.of<PlayingBloc>(context)
           .add(PlayingStateInitial(id: songs![audioPlayer.currentIndex!].id));
-    });
-    audioPlayer.currentIndexStream.listen((event) {
+
       BlocProvider.of<PlayingBloc>(context)
           .add(AddToRecent(id: songs![audioPlayer.currentIndex!].id));
     });
+    audioPlayer.currentIndexStream.listen((event) {});
   }
 
   getSongs() async {
