@@ -64,7 +64,7 @@ class ScreenSettings extends StatelessWidget {
       onTap: () {},
       child: Row(
         children: [
-          const Icon(Icons.whatsapp, color: textColor),
+          const Icon(Icons.message, color: textColor),
           kWidth10,
           const Text(
             'Filter Whatsapp Audios',

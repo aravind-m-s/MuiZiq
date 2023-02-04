@@ -30,6 +30,7 @@ class ScreenPlaylistView extends StatelessWidget {
     );
     final playlistDb = await Hive.openBox<pd.PlaylistModel>('playlists');
     final playlist = playlistDb.values.elementAt(index);
+    await convertPlaylistIds(playlist);
     List<SongModel> song = [];
     for (int i = 0; i < playlist.songIds.length; i++) {
       for (int j = 0; j < querySongs.length; j++) {
@@ -48,7 +49,6 @@ class ScreenPlaylistView extends StatelessWidget {
     }
     playlistSongModel = [];
     playlistSongModel.addAll(song);
-    await convertPlaylistIds(playlist);
   }
 
   convertPlaylistIds(pd.PlaylistModel playlist) async {
@@ -62,7 +62,6 @@ class ScreenPlaylistView extends StatelessWidget {
         }
       }
     }
-    audio = allPlaylistSongs;
   }
 
   getPlaylistName() async {
@@ -73,7 +72,7 @@ class ScreenPlaylistView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    convertPlaylist();
+    // convertPlaylist();
     controller.text = playlistname;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       BlocProvider.of<PlaylistBloc>(context).add(GetPlaylistData(index: index));
@@ -126,7 +125,8 @@ class ScreenPlaylistView extends StatelessWidget {
             final music = state.playlistData[index];
             return InkWell(
               onTap: () async {
-                convertPlaylist();
+                await audioPlayer.stop();
+                await convertPlaylist();
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (ctx) => ScreenPlay(

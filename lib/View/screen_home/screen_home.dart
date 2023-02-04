@@ -54,7 +54,8 @@ class ScreenHome extends StatelessWidget {
           itemCount: state.musics.length,
           itemBuilder: (context, index) {
             return InkWell(
-              onTap: () {
+              onTap: () async {
+                await audioPlayer.stop();
                 audio = state.musics;
                 Navigator.push(
                   context,

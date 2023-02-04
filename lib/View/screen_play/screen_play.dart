@@ -24,7 +24,6 @@ class ScreenPlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     playSong(context);
-
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (timeStamp == const Duration(milliseconds: 100)) {
         BlocProvider.of<PlayingBloc>(context)
@@ -46,7 +45,7 @@ class ScreenPlay extends StatelessWidget {
     );
   }
 
-  playSong(context) async {
+  playSong(ctx) async {
     await getSongs();
 
     await audioPlayer.setAudioSource(createSongList(songs!),
@@ -63,20 +62,21 @@ class ScreenPlay extends StatelessWidget {
           audioPlayer.loopMode != LoopMode.one) {
         if (audioPlayer.hasNext &&
             audioPlayer.currentIndex! != audio.length - 1) {
-          BlocProvider.of<PlayingBloc>(context).add(SeekNext());
+          BlocProvider.of<PlayingBloc>(ctx).add(SeekNext());
         } else {
           audioPlayer.play();
         }
       }
     });
     audioPlayer.currentIndexStream.listen((event) {
-      BlocProvider.of<PlayingBloc>(context)
-          .add(PlayingStateInitial(id: songs![audioPlayer.currentIndex!].id));
+      if (event != null) {
+        BlocProvider.of<PlayingBloc>(ctx)
+            .add(PlayingStateInitial(id: songs![audioPlayer.currentIndex!].id));
 
-      BlocProvider.of<PlayingBloc>(context)
-          .add(AddToRecent(id: songs![audioPlayer.currentIndex!].id));
+        BlocProvider.of<PlayingBloc>(ctx)
+            .add(AddToRecent(id: songs![audioPlayer.currentIndex!].id));
+      }
     });
-    audioPlayer.currentIndexStream.listen((event) {});
   }
 
   getSongs() async {
